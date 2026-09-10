@@ -8,7 +8,7 @@ Keep `agy` sessions minimal and deterministic: lean agents, fast wrapper binarie
 
 | Boundary | Input | Output | Owner |
 |---|---|---|---|
-| Agent Layer (`plugins/agy-minimal/agents/agy-minimal.md`) | user prompt + AGENTS.md rules | `run_command` calls to plugin `bin/*` | agent config |
+| Agent Layer (`plugins/agy-frontend/agents/agy-frontend.md`) | user prompt + AGENTS.md rules | `run_command` calls to plugin `bin/*` + frontend skills | agent config |
 | Frontend Layer (`plugins/agy-frontend/agents/agy-frontend.md`, `skills/better-*`, `skills/design-taste/`, `skills/checklist-design/`) | user prompt + interface code | review findings (Block/Approve) + audit tables / critique + fixes in project idiom | plugin skills |
 | Tool Override Layer (`plugins/agy-minimal/bin/{ffgrep,fffind,hasline}`, `block-native-*.sh`, `block-bash-bypass.sh`, `hooks.json`) | pattern + path / patch / shell command | `rg`/`fd` line output / deny JSON / edited file / allow-or-deny JSON | plugin bin |
 | Doctor (`plugins/agy-minimal/bin/agy-doctor`) | repo tree + global `~/.gemini` | `[ok]/[warn]/[fail]` lines, exit 0/1/2 | plugin bin |
@@ -37,7 +37,7 @@ Keep `agy` sessions minimal and deterministic: lean agents, fast wrapper binarie
 
 ## Execution Flow
 
-1. Entry: `agy --add-dir "$PWD" --agent agy-minimal` (interactive) or `-p "<q>" --disable-slash-commands --effort low` (read-only script).
+1. Entry: `agy --add-dir "$PWD" --agent agy-frontend` (interactive) or `-p "<q>" --disable-slash-commands --effort low` (read-only script).
 2. Boundary parse/validate: wrapper checks `$# >= 1`, hook drains stdin.
 3. Core execution: `exec rg…` / `exec fd…` / emit deny JSON.
 4. Persistence/output: stdout lines (search) or deny reason (hook); no files written.

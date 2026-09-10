@@ -21,15 +21,13 @@ lists both. Re-run to repair.
 ## Use
 
 Just run `agy` inside your project — both plugins load by default
-(tool guards, rules, skills; no flags needed). Name a persona only to
-steer the voice:
+(tool guards, rules, skills; no flags needed). One persona does it all:
 
 ```bash
-agy --agent agy-minimal    # lean code session
-agy --agent agy-frontend   # design/frontend session
+agy --agent agy-frontend
 ```
 
-Attach an extra workspace dir: add `--add-dir <path>` to any of the above.
+Attach an extra workspace dir: add `--add-dir <path>`.
 
 Non-interactive is read-only (no `run_command` in `-p`); the agent emits
 copy-paste commands instead.
@@ -42,7 +40,6 @@ Web (token-cheap, free): `tfsearch <query>`, `tffetch <url>...` — needs
 ```text
 plugins/agy-minimal/       # core: tool surface (deny-hooks + wrappers)
 ├── plugin.json            # manifest
-├── agents/agy-minimal.md  # lean persona (no pleasantries, no artifacts)
 ├── hooks.json             # deny grep_search|find_by_name, write_to_file|replace_file_content
 ├── rules/AGENTS.md        # portable overrides (travel with the plugin)
 ├── skills/ff-search/      # ffgrep/fffind runbook

@@ -10,7 +10,7 @@ global `~/.gemini` files do not — those need a manual/script step.
 
 ## Can (travels with this plugin)
 
-- `agents/` + `rules/AGENTS.md` — invocation defaults (`--add-dir` in rules, read-only `-p` in persona).
+- `rules/AGENTS.md` — invocation defaults (`--add-dir` in rules); the single frontend persona lives in the frontend plugin (read-only `-p` there).
 - `hooks.json` — deny guards (search/edit).
 - `skills/*` — runbooks, including this one.
 - `mcp_config.json` — lazy MCP servers.
@@ -37,4 +37,4 @@ global `~/.gemini` files do not — those need a manual/script step.
 
 ## Verify
 
-- `agy-doctor` exit 0 in repo; `make ci` green; `agy agents` lists `agy-minimal`.
+- `agy-doctor` exit 0 in repo; `make ci` green; `agy agents` lists `agy-frontend`.

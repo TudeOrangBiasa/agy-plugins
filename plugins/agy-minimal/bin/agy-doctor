@@ -20,7 +20,7 @@ bad() { echo "[fail] $1" >&2; fail=1; }
 
 # Repo: plugin bundle (source of truth) — failures here are blocking.
 [ -f plugins/agy-minimal/plugin.json ] && ok "repo plugin manifest" || bad "repo plugin manifest missing"
-[ -f plugins/agy-minimal/agents/agy-minimal.md ] && ok "repo agent present" || bad "repo agent missing"
+[ -f plugins/agy-frontend/agents/agy-frontend.md ] && ok "repo agent present (single persona)" || bad "repo agent missing"
 [ -f plugins/agy-minimal/hooks.json ] && ok "repo hooks present" || bad "repo hooks missing"
 [ -f plugins/agy-minimal/rules/AGENTS.md ] && ok "repo rules present" || bad "repo rules missing"
 [ -f plugins/agy-frontend/rules/AGENTS.md ] && ok "frontend rules present" || bad "frontend rules missing"

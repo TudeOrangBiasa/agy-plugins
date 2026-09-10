@@ -10,7 +10,7 @@ ok() { echo "[ok] $1"; }
 bad() { echo "[fail] $1" >&2; fail=1; }
 
 [ -f AGENTS.md ] && ok "AGENTS.md present" || bad "AGENTS.md missing"
-[ -f plugins/agy-minimal/agents/agy-minimal.md ] && ok "agy-minimal agent present" || bad "agy-minimal agent missing"
+[ ! -f plugins/agy-minimal/agents/agy-minimal.md ] && ok "single persona (no minimal split)" || bad "split persona still present"
 [ -f plugins/agy-minimal/plugin.json ] && ok "plugin manifest present" || bad "plugin manifest missing"
 [ -x "$PBIN/fffind" ] && ok "fffind executable" || bad "fffind not executable"
 [ -x "$PBIN/tfsearch" ] && ok "tfsearch executable" || bad "tfsearch not executable"

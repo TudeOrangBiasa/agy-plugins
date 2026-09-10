@@ -14,7 +14,7 @@
 
 ## Context Snapshot
 
-- Relevant files/modules: `plugins/agy-minimal/` (`plugin.json`, `agents/`, `hooks.json`, `rules/`, `skills/`, `bin/`, `stream-rules.json`, `mcp_config.json`), `plugins/agy-frontend/skills/checklist-design/` (`SKILL.md` + `references/` with 129 checklists bundled), `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/OBSERVABILITY.md`, `docs/adr/`, `scripts/harness/*.sh`, `scripts/audit_harness.sh`, `scripts/deploy-global.sh`.
+- Relevant files/modules: `plugins/agy-minimal/` (`plugin.json`, `hooks.json`, `rules/`, `skills/`, `bin/`, `stream-rules.json`, `mcp_config.json`), `plugins/agy-frontend/agents/agy-frontend.md` (single persona), `plugins/agy-frontend/skills/checklist-design/` (`SKILL.md` + `references/` with 129 checklists bundled), `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/OBSERVABILITY.md`, `docs/adr/`, `scripts/harness/*.sh`, `scripts/audit_harness.sh`, `scripts/deploy-global.sh`.
 - Existing commands/workflows: `make smoke|check|test|ci` via `Makefile.harness`; audit via `./scripts/audit_harness.sh .` (vendored, also a CI job).
 - Known risks: core tools can't be unregistered, only denied; `agy plugin disable`/`agy mcp disable` affect global config, applied manually not in scripts.
 

@@ -30,3 +30,4 @@ ADRs keep their Status line updated instead).
 | [0022](0022-bundle-checklist-design.md) | Bundle Checklist Design checklists as local references | Accepted |
 | [0023](0023-context-files-pull.md) | Pull-convention workspace context files | Accepted |
 | [0024](0024-design-md-taste.md) | DESIGN.md as the taste foundation | Accepted |
+| [0025](0025-single-persona.md) | Single frontend persona | Accepted |

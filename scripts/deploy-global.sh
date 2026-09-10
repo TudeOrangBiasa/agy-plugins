@@ -34,9 +34,7 @@ install_plugin agy-frontend
 plugin_ok=0
 if command -v agy >/dev/null 2>&1; then
   if agy agents 2>/dev/null | grep -q "^agy-minimal$"; then
-    echo "[ok] agy agents lists agy-minimal (via plugin)"
-  else
-    echo "[warn] agy agents does not list agy-minimal via plugin" >&2
+    echo "[warn] split persona agy-minimal still listed (single persona is agy-frontend)" >&2
   fi
   if agy agents 2>/dev/null | grep -q "^agy-frontend$"; then
     echo "[ok] agy agents lists agy-frontend (via plugin)"

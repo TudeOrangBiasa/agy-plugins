@@ -88,18 +88,13 @@ else
   fail=1
 fi
 
-# agy-minimal.md frontmatter keys (documented fields only; cf. official flutter agent)
-for k in 'name: agy-minimal' 'mainAgent: true' 'subagent: false'; do
-  grep -qF "$k" plugins/agy-minimal/agents/agy-minimal.md && ok "frontmatter $k" || bad "frontmatter missing: $k"
-done
 # undocumented skills:/agents: fields must stay out (unload risk for plugin skills)
-for a in plugins/agy-minimal/agents/agy-minimal.md plugins/agy-frontend/agents/agy-frontend.md; do
-  if grep -Eq '^(skills|agents):' "$a"; then
-    bad "undocumented frontmatter present (skills:/agents:) in $a"
-  else
-    ok "no undocumented frontmatter"
-  fi
-done
+a=plugins/agy-frontend/agents/agy-frontend.md
+if grep -Eq '^(skills|agents):' "$a"; then
+  bad "undocumented frontmatter present (skills:/agents:) in $a"
+else
+  ok "no undocumented frontmatter"
+fi
 if python3 -c 'import json; assert json.load(open("plugins/agy-frontend/plugin.json")).get("name") == "agy-frontend"'; then
   echo "[ok] frontend manifest"
 else
