@@ -1,0 +1,4 @@
+- Frontend-only: interface quality work — no backends, migrations, or infra.
+- Requires the agy-minimal plugin: wrappers, hooks, and `agy-doctor` live there; this plugin adds only tuning knowledge.
+- Design review always runs the `checklist-design` skill: name the matching checklist (or state in one line that none matches), then audit it item by item; checklists bundled as local references, read on demand.
+- Design work reads the repo DESIGN.md via the `design-taste` skill (identity first, then principles, then checklist); none present → say so and fall back, never invent an identity.

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# ffgrep — minimal text search for agy-minimal.
+# Thin deterministic wrapper over ripgrep. Replaces `grep_search`.
+# Usage: ffgrep <pattern> [path] [-- <extra rg args>]
+set -euo pipefail
+
+if [ $# -lt 1 ]; then
+  echo "usage: ffgrep <pattern> [path] [-- <rg args>]" >&2
+  exit 2
+fi
+
+pattern="$1"; shift
+path="."
+extra=()
+if [ $# -gt 0 ]; then
+  if [ "$1" = "--" ]; then
+    shift
+    extra=("$@")
+  else
+    path="$1"; shift
+    if [ $# -gt 0 ] && [ "$1" = "--" ]; then
+      shift
+      extra=("$@")
+    elif [ $# -gt 0 ]; then
+      extra=("$@")
+    fi
+  fi
+fi
+
+exec rg --no-heading --line-number --color=never --smart-case --hidden \
+  --glob '!.git/*' --glob '!node_modules/*' --glob '!target/*' \
+  "${extra[@]}" -- "$pattern" "$path"

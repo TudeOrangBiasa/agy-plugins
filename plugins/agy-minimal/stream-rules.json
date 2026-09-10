@@ -1,0 +1,84 @@
+{
+  "rules": [
+    {
+      "name": "gate-rm-rf-root",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\brm\\b[^|&;\\n]*?\\s-[a-zA-Z]*[rR][^|&;\\n]*?\\s+[\"']?(/|~|\\$HOME|\\$\\{HOME\\})([\"'\\s]|/\\s*|$)",
+      "strip_prose": true,
+      "reason": "[gate-rm-rf-root] Refusing recursive delete of / or home. Narrow the target or confirm explicitly."
+    },
+    {
+      "name": "gate-secret-in-args",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": ".*",
+      "pattern": "sk-ant-[A-Za-z0-9\\-_]{10,}|ghp_[A-Za-z0-9]{10,}|AKIA[0-9A-Z]{16}|xox[bpas]-[A-Za-z0-9\\-]{10,}",
+      "strip_prose": false,
+      "reason": "[gate-secret-in-args] Possible secret value in tool args. Use env references, never literal keys."
+    },
+    {
+      "name": "gate-secret-assignment",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\b(api[_-]?key|passwd|password|secret|token)\\b\\s*[:=]\\s*\\S+",
+      "flags": "i",
+      "strip_prose": true,
+      "reason": "[gate-secret-assignment] Secret assignment in shell command. Export keys outside the session, never inline."
+    },
+    {
+      "name": "gate-git-force-push",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\bgit\\b[^|&;\\n]*?\\bpush\\b[^|&;\\n]*?(--force\\b|--delete\\b|\\s-f(\\s|$))",
+      "strip_prose": true,
+      "reason": "[gate-git-force-push] No force-push or delete. Push a feature branch and open a PR instead."
+    },
+    {
+      "name": "gate-git-hard-reset",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\bgit\\b[^|&;\\n]*?\\breset\\b[^|&;\\n]*?--hard\\b",
+      "strip_prose": true,
+      "reason": "[gate-git-hard-reset] git reset --hard destroys uncommitted work. Stash or commit instead."
+    },
+    {
+      "name": "gate-git-discard",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\bgit\\b[^|&;\\n]*?\\b(checkout|restore)\\b\\s+\\.([\\s]|$)",
+      "strip_prose": true,
+      "reason": "[gate-git-discard] git checkout/restore . discards all local changes. Name explicit paths instead."
+    },
+    {
+      "name": "gate-git-protected-push",
+      "type": "gate",
+      "scope": ["pre_tool_use"],
+      "enabled": true,
+      "matcher": "^run_command$",
+      "pattern": "\\bgit\\b[^|&;\\n]*?\\bpush\\b[^|&;\\n]*?\\b(main|master|prod|staging|development|production)\\b",
+      "strip_prose": true,
+      "decision": "ask",
+      "reason": "[gate-git-protected-push] Pushing to a protected branch. Open a PR instead, or approve when prompted."
+    },
+    {
+      "name": "guide-ts-no-any",
+      "type": "inject",
+      "scope": ["pre_invocation"],
+      "enabled": true,
+      "pattern": "\\.tsx?(#|\\b)[^\\n]{0,400}(:\\s*any|\\bas\\s+any\\b)",
+      "text": "guidance: ts-no-any — `: any`/`as any` spotted in a .ts edit; prefer unknown, a schema parse, or a named type (see skills/ts-review)."
+    }
+  ]
+}

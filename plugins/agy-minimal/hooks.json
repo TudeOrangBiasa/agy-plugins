@@ -1,0 +1,67 @@
+{
+  "enforce-custom-search": {
+    "PreToolUse": [
+      {
+        "matcher": "grep_search|find_by_name",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./bin/block-native-search.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "enforce-wrapper-only": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./bin/block-bash-bypass.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "stream-rules": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./bin/stream-gate.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "enforce-hasline-edit": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./bin/block-native-edit.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "guidance-inject": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "./bin/guidance-inject.sh",
+        "timeout": 10
+      }
+    ]
+  }
+}

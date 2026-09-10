@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2015  # ok/warn/bad end in echo/assignment (exit 0); chains are safe here.
+# agy-doctor — read-only agy CLI tweak diagnostics for agy-minimal.
+# Checks repo plugin files (must pass) + global install (warn-only).
+# Offline, no network, writes nothing. Usage: agy-doctor
+set -euo pipefail
+
+if [ $# -gt 0 ]; then
+  echo "usage: agy-doctor" >&2
+  exit 2
+fi
+
+root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
+cd "$root_dir"
+PBIN="plugins/agy-minimal/bin"
+fail=0
+ok() { echo "[ok] $1"; }
+warn() { echo "[warn] $1"; }
+bad() { echo "[fail] $1" >&2; fail=1; }
+
+# Repo: plugin bundle (source of truth) — failures here are blocking.
+[ -f plugins/agy-minimal/plugin.json ] && ok "repo plugin manifest" || bad "repo plugin manifest missing"
+[ -f plugins/agy-minimal/agents/agy-minimal.md ] && ok "repo agent present" || bad "repo agent missing"
+[ -f plugins/agy-minimal/hooks.json ] && ok "repo hooks present" || bad "repo hooks missing"
+[ -f plugins/agy-minimal/rules/AGENTS.md ] && ok "repo rules present" || bad "repo rules missing"
+[ -f plugins/agy-frontend/rules/AGENTS.md ] && ok "frontend rules present" || bad "frontend rules missing"
+[ -f plugins/agy-minimal/skills/cli-tweaks/SKILL.md ] && ok "repo cli-tweaks skill" || bad "repo cli-tweaks skill missing"
+[ -f plugins/agy-minimal/stream-rules.json ] && ok "repo stream rules present" || bad "repo stream rules missing"
+for b in ffgrep fffind hasline tfsearch tffetch agy-doctor block-native-search.sh block-native-edit.sh block-bash-bypass.sh stream-gate.sh guidance-inject.sh; do
+  [ -x "$PBIN/$b" ] && ok "repo bin $b executable" || bad "repo bin $b not executable"
+done
+if command -v python3 >/dev/null 2>&1; then
+  python3 -m json.tool plugins/agy-minimal/hooks.json >/dev/null \
+    && ok "repo hooks.json valid" || bad "repo hooks.json invalid"
+  if python3 - "$root_dir/plugins/agy-minimal/hooks.json" <<'EOF' >/dev/null 2>&1
+import json, sys
+with open(sys.argv[1]) as f:
+    hooks = json.load(f)
+matchers = [g.get("matcher", "") for h in hooks.values() for g in h.get("PreToolUse", [])]
+assert any("grep_search" in m for m in matchers), "search deny missing"
+assert any("write_to_file" in m for m in matchers), "edit deny missing"
+assert any(m == "run_command" for m in matchers), "bypass deny missing"
+EOF
+  then
+    ok "repo deny hooks wired"
+  else
+    bad "repo deny hooks incomplete"
+  fi
+fi
+
+# Workspace: context files (presence only — missing slots are normal).
+for slot in style contribute architecture practices memory domain design; do
+  case $slot in
+    style) cands=(STYLEGUIDE.md CONVENTIONS.md CODING_STANDARDS.md CODE_GUIDELINES.md) ;;
+    contribute) cands=(CONTRIBUTING.md DEVELOPMENT.md DEV_GUIDE.md) ;;
+    architecture) cands=(ARCHITECTURE.md) ;;
+    practices) cands=(BEST_PRACTICES.md RULES.md) ;;
+    memory) cands=(AGENTS.md CLAUDE.md GEMINI.md) ;;
+    domain) cands=(CONTEXT.md GLOSSARY.md) ;;
+    design) cands=(DESIGN.md) ;;
+  esac
+  found=()
+  for f in "${cands[@]}"; do
+    if [ -f "$f" ] || [ -f "docs/$f" ]; then found+=("$f"); fi
+  done
+  if [ "${#found[@]}" -gt 0 ]; then ok "context $slot: ${found[*]}"; fi
+done
+
+# Global: install state — advisory only, fixed by deploy/manual steps.
+global_plugins="$HOME/.gemini/config/plugins"
+[ -d "$global_plugins/agy-minimal" ] && ok "global plugin installed" \
+  || warn "global plugin missing (run ./scripts/deploy-global.sh)"
+settings="$HOME/.gemini/antigravity-cli/settings.json"
+if [ -f "$settings" ]; then
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -m json.tool "$settings" >/dev/null 2>&1 \
+      && ok "global settings.json valid" || warn "global settings.json invalid JSON"
+  fi
+  grep -q "status-line" "$settings" 2>/dev/null \
+    && ok "global statusLine wired" || warn "global statusLine not wired (agy-hud pending)"
+else
+  warn "global settings.json absent"
+fi
+
+if [ "$fail" -ne 0 ]; then echo "doctor FAILED" >&2; exit 1; fi
+echo "doctor passed."

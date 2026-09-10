@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "agy-frontend",
+  "description": "Frontend extension skills for agy: taste-layer principles (layout, typography, colors, accessibility, UI, writing, interface review, adapted from jakubkrehel/skills, MIT), DESIGN.md-driven taste (design-taste, Apache 2.0), plus on-demand Checklist Design verification audits (checklist-design/skills, MIT)."
+}

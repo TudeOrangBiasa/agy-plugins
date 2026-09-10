@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# tffetch — token-cheap page extraction via TinyFish. Free, no wallet draw.
+# Usage: tffetch <url>... [--ttl SECONDS] [--format markdown|html|json]
+#   [--selector CSS ...]   (repeatable include selectors, max 20)
+# Key: TINYFISH_API_KEY in env (never commit it).
+# Output: "## TITLE (URL)\n<text>" per result, markdown default.
+set -euo pipefail
+
+if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "usage: tffetch <url>... [--ttl SECONDS] [--format markdown|html|json] [--selector CSS ...]" >&2
+  exit 2
+fi
+if [ -z "${TINYFISH_API_KEY:-}" ]; then
+  echo "tffetch: TINYFISH_API_KEY not set (export it; get a key at agent.tinyfish.ai/api-keys)" >&2
+  exit 2
+fi
+
+urls=()
+ttl="" format="markdown" selectors=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --ttl) ttl="$2"; shift 2 ;;
+    --format) format="$2"; shift 2 ;;
+    --selector) selectors+=("$2"); shift 2 ;;
+    -*) echo "tffetch: unknown flag $1" >&2; exit 2 ;;
+    *) urls+=("$1"); shift ;;
+  esac
+done
+[ "${#urls[@]}" -le 10 ] || { echo "tffetch: max 10 urls per request" >&2; exit 2; }
+
+payload=$(jq -n \
+  --argjson urls "$(printf '%s\n' "${urls[@]}" | jq -R . | jq -s .)" \
+  --arg format "$format" \
+  --argjson selectors "$(printf '%s\n' "${selectors[@]:-}" | { grep . || true; } | jq -R . | jq -s .)" \
+  --arg ttl "$ttl" \
+  '{urls: $urls, format: $format}
+   + (if $selectors | length > 0 then {include_selectors: $selectors} else {} end)
+   + (if $ttl != "" then {ttl: ($ttl | tonumber)} else {} end)')
+
+curl -sS -X POST "https://api.fetch.tinyfish.ai" \
+  -H "X-API-Key: $TINYFISH_API_KEY" -H "Content-Type: application/json" \
+  -d "$payload" --max-time 150 \
+| jq -r '.results[] | "## \(.title) (\(.url))\n\(.text)",
+         (.errors // [] | .[] | empty)'

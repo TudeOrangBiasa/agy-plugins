@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# fffind — minimal file search for agy-minimal.
+# Thin deterministic wrapper over fd. Replaces `find_by_name`.
+# Usage: fffind <pattern> [path] [-- <extra fd args>]
+set -euo pipefail
+
+if [ $# -lt 1 ]; then
+  echo "usage: fffind <pattern> [path] [-- <fd args>]" >&2
+  exit 2
+fi
+
+pattern="$1"; shift
+path="."
+extra=()
+if [ $# -gt 0 ]; then
+  if [ "$1" = "--" ]; then
+    shift
+    extra=("$@")
+  else
+    path="$1"; shift
+    if [ $# -gt 0 ] && [ "$1" = "--" ]; then
+      shift
+      extra=("$@")
+    elif [ $# -gt 0 ]; then
+      extra=("$@")
+    fi
+  fi
+fi
+
+exec fd --color=never --hidden --exclude '.git' "${extra[@]}" -- "$pattern" "$path"

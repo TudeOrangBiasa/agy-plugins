@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""hasline — hashline edits for agy-minimal. Replaces write_to_file/replace_file_content.
+
+Flow:  `hasline show FILE`  -> numbered lines + [FILE#TAG]
+       compose patch, then `hasline apply PATCH`.
+
+Patch format (inspired by pi-mono agent edits):
+    [path/to/file#AB12]
+    PUT 3.=5:
+    +replacement line
+    CUT 7.=7
+    PUT <1:
+    +inserted at head
+    PUT >$:
+    +appended at tail
+
+Ops: PUT N.=M: (replace range, body required), PUT <N: / PUT >N:
+(insert before/after line N; N=$ means last line, <$ invalid),
+CUT N.=M (delete range). Body rows MUST start with '+'; a lone '+'
+is an empty line. TAG must match the file's current tag or apply
+aborts (stale protection). Numbers always refer to ORIGINAL lines.
+Exit: 0 ok, 1 error, 2 usage, 3 stale tag.
+"""
+import hashlib
+import os
+import re
+import sys
+import tempfile
+
+HEADER = re.compile(r"^\[(.+)#([0-9A-Fa-f]{4})\]\s*$")
+PUT_RANGE = re.compile(r"^PUT\s+(\d+)\.=(\d+):\s*$")
+PUT_BEFORE = re.compile(r"^PUT\s+<(\d+):\s*$")
+PUT_AFTER = re.compile(r"^PUT\s+>(\d+|\$):\s*$")
+CUT = re.compile(r"^CUT\s+(\d+)\.=(\d+)\s*$")
+
+
+def tag_of(data: bytes) -> str:
+    return hashlib.sha1(data).hexdigest()[:4].upper()
+
+
+def load(path: str):
+    with open(path, "rb") as f:
+        data = f.read()
+    text = data.decode("utf-8")
+    return text.split("\n") if text else [], data
+
+
+def cmd_show(path: str, sel: str | None) -> int:
+    if not os.path.isfile(path):
+        print(f"hasline: no such file: {path}", file=sys.stderr)
+        return 1
+    lines, data = load(path)
+    if lines and lines[-1] == "":
+        lines = lines[:-1]  # trailing newline is not a line
+    lo, hi = 1, len(lines)
+    if sel:
+        m = re.fullmatch(r"(\d+)(?:-(\d+))?", sel)
+        if not m:
+            print("hasline: range like 50-200", file=sys.stderr)
+            return 2
+        lo = int(m.group(1))
+        hi = int(m.group(2) or m.group(1))
+        if lo < 1 or hi > len(lines) or lo > hi:
+            print("hasline: range out of bounds", file=sys.stderr)
+            return 1
+    print(f"[{path}#{tag_of(data)}]")
+    for n in range(lo, hi + 1):
+        print(f"{n}:{lines[n - 1]}")
+    return 0
+
+
+def parse_patch(text: str):
+    """-> [(path, tag, ops)] where ops are tuples. Raises ValueError."""
+    sections = []
+    cur = None
+    i = 0
+    raw = text.split("\n")
+    while i < len(raw):
+        line = raw[i].rstrip("\n")
+        if line == "":
+            i += 1
+            continue
+        mh = HEADER.match(line)
+        if mh:
+            cur = (mh.group(1), mh.group(2).upper(), [])
+            sections.append(cur)
+            i += 1
+            continue
+        if cur is None:
+            raise ValueError(f"line {i + 1}: op outside [FILE#TAG] section")
+        mr = PUT_RANGE.match(line)
+        mb = PUT_BEFORE.match(line)
+        ma = PUT_AFTER.match(line)
+        if mr is not None:
+            kind, m = "range", mr
+        elif mb is not None:
+            kind, m = "before", mb
+        elif ma is not None:
+            kind, m = "after", ma
+        else:
+            m = CUT.match(line)
+            if m:
+                cur[2].append(("cut", int(m.group(1)), int(m.group(2))))
+                i += 1
+                continue
+            raise ValueError(f"line {i + 1}: bad op (want PUT/CUT, +body rows): {line!r}")
+        body = []
+        i += 1
+        while i < len(raw) and raw[i].startswith("+"):
+            body.append(raw[i][1:])
+            i += 1
+        if kind == "range" and not body:
+            raise ValueError(f"line {i + 1}: PUT range needs +body rows")
+        if kind == "range":
+            cur[2].append(("put", int(m.group(1)), int(m.group(2)), body))
+        elif kind == "before":
+            cur[2].append(("before", int(m.group(1)), body))
+        else:
+            cur[2].append(("after", m.group(1), body))
+    if not sections:
+        raise ValueError("empty patch: need [FILE#TAG] section")
+    return sections
+
+
+def apply_section(path: str, tag: str, ops) -> None:
+    if not os.path.isfile(path):
+        raise ValueError(f"no such file: {path}")
+    lines, data = load(path)
+    if lines and lines[-1] == "":
+        lines = lines[:-1]
+    if tag_of(data) != tag:
+        print(f"hasline: STALE tag for {path}: patch has #{tag}, "
+              f"file is now #{tag_of(data)} — re-run `hasline show`",
+              file=sys.stderr)
+        sys.exit(3)
+    n = len(lines)
+    touched: list[tuple[int, int]] = []
+
+    def check_range(a: int, b: int, what: str) -> None:
+        if not (1 <= a <= b <= n):
+            raise ValueError(f"{what} {a}.={b} out of bounds (1..{n})")
+        for s, e in touched:
+            if not (b < s or a > e):
+                raise ValueError(f"{what} {a}.={b} overlaps {s}.={e}")
+
+    # Validate first against ORIGINAL numbering.
+    for op in ops:
+        if op[0] == "put":
+            _, a, b, _ = op
+            check_range(a, b, "PUT")
+            touched.append((a, b))
+        elif op[0] == "cut":
+            _, a, b = op
+            check_range(a, b, "CUT")
+            touched.append((a, b))
+        elif op[0] == "before":
+            _, at, _ = op
+            if not 1 <= at <= n + 1:
+                raise ValueError(f"PUT <{at} out of bounds (1..{n + 1})")
+        else:
+            _, at, _ = op
+            if at != "$" and not 1 <= int(at) <= n:
+                raise ValueError(f"PUT >{at} out of bounds (1..{n} or $)")
+
+    # Apply bottom-up so original numbers stay valid.
+    order = []
+    for op in ops:
+        key = {"put": op[1], "cut": op[1], "before": op[1],
+               "after": n + 1 if op[1] == "$" else int(op[1])}.get(op[0])
+        order.append((key, op))
+    out = list(lines)
+    for _, op in sorted(order, key=lambda t: -t[0]):
+        if op[0] == "put":
+            _, a, b, body = op
+            out[a - 1:b] = body
+        elif op[0] == "cut":
+            _, a, b = op
+            del out[a - 1:b]
+        elif op[0] == "before":
+            _, at, body = op
+            out[at - 1:at - 1] = body
+        else:
+            _, at, body = op
+            pos = len(out) if at == "$" else int(at)
+            out[pos:pos] = body
+    ending = "\n".join(out) + "\n"
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".hasline-")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(ending)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+    print(f"[ok] {path}#{tag} -> #{tag_of(ending.encode())}")
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) < 2:
+        print(__doc__.strip().split("\n")[0], file=sys.stderr)
+        print("usage: hasline show FILE [START-END] | hasline apply PATCH",
+              file=sys.stderr)
+        return 2
+    if argv[1] == "show":
+        if len(argv) not in (3, 4):
+            print("usage: hasline show FILE [START-END]", file=sys.stderr)
+            return 2
+        return cmd_show(argv[2], argv[3] if len(argv) == 4 else None)
+    if argv[1] == "apply":
+        if len(argv) != 3:
+            print("usage: hasline apply PATCH", file=sys.stderr)
+            return 2
+        try:
+            with open(argv[2], encoding="utf-8") as f:
+                sections = parse_patch(f.read())
+        except OSError as e:
+            print(f"hasline: {e}", file=sys.stderr)
+            return 1
+        except ValueError as e:
+            print(f"hasline: {e}", file=sys.stderr)
+            return 1
+        try:
+            for path, tag, ops in sections:
+                apply_section(path, tag, ops)
+        except ValueError as e:
+            print(f"hasline: {e}", file=sys.stderr)
+            return 1
+        return 0
+    print(f"hasline: unknown command {argv[1]!r}", file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

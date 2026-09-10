@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "agy-minimal",
+  "description": "Lean coding agent with fast search binaries, anchored edits, and native-tool deny hooks."
+}

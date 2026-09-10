@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# tfsearch — token-cheap web search via TinyFish. Free, no wallet draw.
+# Usage: tfsearch <query> [--location CC] [--language LL]
+#                     [--news | --papers] [--fresh MINUTES] [--page N]
+# Key: TINYFISH_API_KEY in env (never commit it).
+# Output: "N. TITLE\n   URL\n   SNIPPET" per result, compact for LLM use.
+set -euo pipefail
+
+need_key() {
+  if [ -z "${TINYFISH_API_KEY:-}" ]; then
+    echo "tfsearch: TINYFISH_API_KEY not set (export it; get a key at agent.tinyfish.ai/api-keys)" >&2
+    exit 2
+  fi
+}
+
+if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "usage: tfsearch <query> [--location CC] [--language LL] [--news | --papers] [--fresh MINUTES] [--page N]" >&2
+  exit 2
+fi
+need_key
+
+query="$1"; shift
+params=(--data-urlencode "query=$query")
+domain="web"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --location) params+=(--data-urlencode "location=$2"); shift 2 ;;
+    --language) params+=(--data-urlencode "language=$2"); shift 2 ;;
+    --news) domain="news"; shift ;;
+    --papers) domain="research_paper"; shift ;;
+    --fresh) params+=(--data-urlencode "recency_minutes=$2"); shift 2 ;;
+    --page) params+=(--data-urlencode "page=$2"); shift 2 ;;
+    *) echo "tfsearch: unknown flag $1" >&2; exit 2 ;;
+  esac
+done
+params+=(--data-urlencode "domain_type=$domain")
+
+curl -sS -G "https://api.search.tinyfish.ai" "${params[@]}" \
+  -H "X-API-Key: $TINYFISH_API_KEY" --max-time 15 \
+| jq -r '.results[] | "\(.position). \(.title)\n   \(.url)\n   \(.snippet)"'
