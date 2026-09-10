@@ -20,14 +20,14 @@ lists both. Re-run to repair.
 
 ## Use
 
-Just run `agy` inside your project — both plugins load by default
-(tool guards, rules, skills; no flags needed). One persona does it all:
+Install the plugin, then just run `agy` inside your project — no flags.
+Guards, rules, skills, and the frontend taste layer are all active by default.
 
 ```bash
-agy --agent agy-frontend
+agy
 ```
 
-Attach an extra workspace dir: add `--add-dir <path>`.
+Attach an extra workspace dir: `agy --add-dir <path>`.
 
 Non-interactive is read-only (no `run_command` in `-p`); the agent emits
 copy-paste commands instead.
