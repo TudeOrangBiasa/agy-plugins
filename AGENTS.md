@@ -28,7 +28,7 @@ Run from repository root:
 
 ## Minimal Prompt
 
-- Session agent: `plugins/agy-minimal/agents/agy-minimal.md`, run with `agy --agent agy-minimal`.
+- Session agent: `plugins/agy-minimal/agents/agy-minimal.md`; plain `agy` already loads both plugins (guards+rules+skills) — add `--agent <name>` only to steer the voice.
 - Keep `AGENTS.md` to hard rules only; move workflows to `skills/<name>/SKILL.md`.
 - Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags — deny-observed); `-p` is read-only, interactive session executes (see `skills/cli-tweaks/SKILL.md`).
 - Diagnose CLI state with `agy-doctor` via `run_command` before touching global config.

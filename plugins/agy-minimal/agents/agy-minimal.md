@@ -32,3 +32,4 @@ Skill docs (read only when the topic matches; resolve under the plugin dir):
 - adding or tuning a deny rule: `skills/stream-rules/SKILL.md`
 - TypeScript review: `skills/ts-review/SKILL.md`
 - repo context files: `skills/context-files/SKILL.md` (slots, aliases, read order)
+- design/frontend work: agy-frontend skills (`design-taste`, `checklist-design`, `better-*`) — same wrappers, no new tools.

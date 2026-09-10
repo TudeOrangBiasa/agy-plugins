@@ -20,15 +20,16 @@ lists both. Re-run to repair.
 
 ## Use
 
-```bash
-agy --add-dir "$PWD" --agent agy-minimal
-```
-
-Design/frontend work:
+Just run `agy` inside your project — both plugins load by default
+(tool guards, rules, skills; no flags needed). Name a persona only to
+steer the voice:
 
 ```bash
-agy --add-dir "$PWD" --agent agy-frontend
+agy --agent agy-minimal    # lean code session
+agy --agent agy-frontend   # design/frontend session
 ```
+
+Attach an extra workspace dir: add `--add-dir <path>` to any of the above.
 
 Non-interactive is read-only (no `run_command` in `-p`); the agent emits
 copy-paste commands instead.
