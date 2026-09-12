@@ -161,6 +161,7 @@ out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /t
 [ "$out" = "{}" ] && ok "stream allow rm /tmp" || bad "stream rm /tmp: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf ./build"}}}' | "$PBIN/stream-gate.sh")
 [ "$out" = "{}" ] && ok "stream allow rm relative" || bad "stream rm relative: $out"
+# NOTE: sk-ant-AbCdEf1234567890 below is a synthetic fixture vector, not a real key.
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"export K=sk-ant-AbCdEf1234567890"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "gate-secret-in-args" && ok "stream deny secret" || bad "stream secret: $out"
 out=$(printf '{"toolCall":{"name":"grep_search","args":{"pattern":"foo"}}}' | "$PBIN/stream-gate.sh")
