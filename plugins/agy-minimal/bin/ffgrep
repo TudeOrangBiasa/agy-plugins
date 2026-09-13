@@ -8,6 +8,7 @@ if [ $# -lt 1 ]; then
   echo "usage: ffgrep <pattern> [path] [-- <rg args>]" >&2
   exit 2
 fi
+command -v rg >/dev/null 2>&1 || { echo "ffgrep needs ripgrep (rg) on PATH" >&2; exit 2; }
 
 pattern="$1"; shift
 path="."

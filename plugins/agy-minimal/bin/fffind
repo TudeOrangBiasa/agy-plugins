@@ -8,6 +8,9 @@ if [ $# -lt 1 ]; then
   echo "usage: fffind <pattern> [path] [-- <fd args>]" >&2
   exit 2
 fi
+FD=fd
+command -v "$FD" >/dev/null 2>&1 || FD=fdfind
+command -v "$FD" >/dev/null 2>&1 || { echo "fffind needs fd (or fdfind) on PATH" >&2; exit 2; }
 
 pattern="$1"; shift
 path="."
@@ -27,4 +30,4 @@ if [ $# -gt 0 ]; then
   fi
 fi
 
-exec fd --color=never --hidden --exclude '.git' "${extra[@]}" -- "$pattern" "$path"
+exec "$FD" --color=never --hidden --exclude '.git' "${extra[@]}" -- "$pattern" "$path"

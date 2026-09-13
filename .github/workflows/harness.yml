@@ -18,8 +18,8 @@ jobs:
       # - actions/setup-python@v5
       # - dtolnay/rust-toolchain@stable
 
-      - name: Install shellcheck
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: Install system dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck ripgrep fd-find
 
       - name: Run harness pipeline
         run: make ci
