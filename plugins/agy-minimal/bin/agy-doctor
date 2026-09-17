@@ -26,9 +26,12 @@ bad() { echo "[fail] $1" >&2; fail=1; }
 [ -f plugins/agy-frontend/rules/AGENTS.md ] && ok "frontend rules present" || bad "frontend rules missing"
 [ -f plugins/agy-minimal/skills/cli-tweaks/SKILL.md ] && ok "repo cli-tweaks skill" || bad "repo cli-tweaks skill missing"
 [ -f plugins/agy-minimal/stream-rules.json ] && ok "repo stream rules present" || bad "repo stream rules missing"
-for b in ffgrep fffind hasline tfsearch tffetch agy-doctor block-native-search.sh block-native-edit.sh block-bash-bypass.sh stream-gate.sh guidance-inject.sh; do
+bins_list="$root_dir/plugins/agy-minimal/bins.list"
+[ -f "$bins_list" ] || bins_list=/dev/null
+while IFS= read -r b || [ -n "${b:-}" ]; do
+  [ -n "${b:-}" ] || continue
   [ -x "$PBIN/$b" ] && ok "repo bin $b executable" || bad "repo bin $b not executable"
-done
+done < "$bins_list"
 if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool plugins/agy-minimal/hooks.json >/dev/null \
     && ok "repo hooks.json valid" || bad "repo hooks.json invalid"

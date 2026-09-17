@@ -63,6 +63,21 @@ else
   fail=1
 fi
 
+# stream-rules shape lock: every gate rule carries a [name]-prefixed reason so
+# hook verdicts stay attributable; test.sh probes behavior, this locks shape.
+if python3 - <<'EOF'
+import json
+spec = json.load(open('plugins/agy-minimal/stream-rules.json'))
+for r in spec["rules"]:
+    if r.get("type") == "gate" and r.get("enabled", True) is not False:
+        assert r["reason"].startswith("[%s]" % r["name"]), r["name"]
+EOF
+then
+  echo "[ok] stream-rules reason shape"
+else
+  fail=1
+fi
+
 if python3 - <<'EOF'
 import json
 d = json.load(open('plugins/agy-minimal/hooks.json'))

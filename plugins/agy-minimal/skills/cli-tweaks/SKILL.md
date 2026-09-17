@@ -10,7 +10,7 @@ global `~/.gemini` files do not — those need a manual/script step.
 
 ## Can (travels with this plugin)
 
-- `rules/AGENTS.md` — invocation defaults (`--add-dir` in rules); the single frontend persona lives in the frontend plugin (read-only `-p` there).
+- `rules/AGENTS.md` — invocation defaults (base no-flags + conditional frontend routing); the opt-in frontend specialist persona lives in the frontend plugin (read-only `-p` there).
 - `hooks.json` — deny guards (search/edit).
 - `skills/*` — runbooks, including this one.
 - `mcp_config.json` — lazy MCP servers.
@@ -32,8 +32,16 @@ global `~/.gemini` files do not — those need a manual/script step.
 2. Fix repo gaps: edit files in `plugins/agy-minimal/` (source of truth).
 3. Fix global gaps: `./scripts/deploy-global.sh` (plugin copy) + manual
    `settings.json` edit for model/statusline/trust (user confirms first).
-4. Pass `--add-dir "$PWD"` when the workspace has `.agents/` customizations
-   (workspace hooks load only then; the installed global plugin needs no flags — deny-observed without them).
+4. Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations
+   (workspace hooks load only then; the installed global plugin needs no flags).
+   `--add-dir` fixes workspace file visibility only, never tool gating — deny-scope
+   per core `rules/AGENTS.md`.
+5. Nested `agy` inside Orca is gated by the global `orca-status` hook
+   (`~/.gemini/config/hooks.json`, matcher `*` → `{"decision":"ask"}` on every
+   `PreToolUse`; `-p` cannot approve, so tools deny — in nested sessions this may
+   surface instead as `failed to execute`). This is Orca-side, not a plugin bug:
+   use an interactive terminal (approve per tool) or test hooks directly
+   (`make smoke`/`make test`); `-p` is read-only copy-paste by design.
 
 ## Verify
 

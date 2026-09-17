@@ -1,3 +1,5 @@
-- Installed global plugin needs no flags (deny-observed without `--add-dir`/`--agent`). Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations — without it, workspace hooks do not load.
+- Base with no flags: general-purpose coding on the minimal tool surface (search `ffgrep`/`fffind`, edits `hasline`, diagnose `agy-doctor`); installed global plugin needs no `--add-dir`/`--agent`.
+- `deny-observed` means plugin-hook deny with a wrapper reason only — never Orca's global `orca-status` `ask`/fail (Orca-side, never calls for `--add-dir`). Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations — without it, workspace hooks do not load.
+- Frontend routing (conditional): when the task touches UI/UX/FE design (interface code, styles, layout, typography, colors, accessibility, copy, DESIGN.md, or an explicit design review), load the frontend guidelines per the agy-frontend rules/skills; otherwise stay on base discipline (`lazy-senior`, `ts-review` as applicable).
 - `settings.json` and other global `~/.gemini` files are user-owned: diagnose with `agy-doctor`, never mutate silently, confirm first.
 - Workspace context files: if the repo has them, read the relevant slot per the `context-files` skill (repo wins for style, core wins for tooling); files load only in a mounted workspace.

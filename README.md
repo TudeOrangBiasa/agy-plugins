@@ -20,13 +20,15 @@ lists both. Re-run to repair.
 
 ## Use
 
-Install the plugin, then just run `agy` inside your project — no flags.
-Guards, rules, skills, and the frontend taste layer are all active by default.
+Install the plugins, then just run `agy` inside your project — no flags.
+Base (`agy-minimal`) handles tools + discipline; the frontend layer activates
+only for UI/UX/FE design work. Guards, rules, and skills are active by default.
 
 ```bash
 agy
 ```
 
+Force the frontend specialist: `agy --agent agy-frontend`.
 Attach an extra workspace dir: `agy --add-dir <path>`.
 
 Non-interactive is read-only (no `run_command` in `-p`); the agent emits

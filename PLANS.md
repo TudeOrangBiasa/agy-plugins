@@ -2,7 +2,7 @@
 
 ## Objective
 
-- Outcome: portable agy plugin harness — core `agy-minimal` (pi-agent-like minimal: one lean agent, fff search binaries, hashline editor, deny hooks, lazy TinyFish web tools; installed stock agy is fast/minimal/efficient) + extension `agy-frontend` (taste layer: better-* principles, design-taste identity, checklist-design verification). Install = deploy both `plugins/*/` (community-ready).
+- Outcome: portable agy plugin harness — base `agy-minimal` (minimal tools + discipline: lean agent surface, fff search binaries, hashline editor, deny hooks, lazy TinyFish web tools; installed stock `agy` runs general-purpose with no flags) + conditional extension `agy-frontend` (guidelines that activate only for UI/UX/FE design work: better-* principles, design-taste identity, checklist-design verification; opt-in specialist persona via `--agent agy-frontend`). Install = deploy both `plugins/*/` (community-ready).
 - Why it matters: every active skill/plugin/MCP schema is injected into the system prompt each turn; native search/edit tools duplicate what `rg`/`fd`/anchored edits do cheaper. Artifacts act as memory (bloat/slowness suspect) → agent is told not to create them unless asked.
 - Non-goals: unregistering core tools at binary level (unsupported); global `~/.gemini` hand-edits (deploy script owns installs); `~/AGENTS.md` diet (user's file, out of scope).
 
@@ -42,10 +42,10 @@
 
 ## Decision Log
 
-Decisions live in `docs/adr/` (ADR-0001–ADR-0024, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
+Decisions live in `docs/adr/` (ADR-0001–ADR-0026, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
 
 ## Final Verification
 
-- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live `agy agents` (lists `agy-minimal` via plugin alone), live forced `grep_search` (denied with plugin reason text), `agy mcp list` (tinyfish pending OAuth).
+- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live `agy agents` (lists `agy-frontend` via plugin), live forced `grep_search` (denied with plugin reason text), `agy mcp list` (tinyfish pending OAuth).
 - Key outputs: full pipeline green on plugin paths; legacy per-file installs cleaned; `README.md` publish instructions.
 - Follow-up tasks: one-time TinyFish OAuth (`agy mcp` UI); `~/AGENTS.md` diet; artifacts/memory trim measurement (`/context` before/after); post-compaction verdict — move `--add-dir` out of always-on (personas + rules) into cli-tweaks skill + README + deploy echo, keep rules to invariants only.

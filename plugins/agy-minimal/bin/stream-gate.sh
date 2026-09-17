@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # stream-gate.sh — TTSR-style named gate rules for agy (PreToolUse).
 # Reads ../stream-rules.json (STREAM_RULES env overrides the path, for tests).
-# Enabled gate rules apply in file order against the toolCall name +
-# serialized args; first match denies, otherwise allow. Fail-open on bad
-# payload, missing file, or broken rule — mirroring TTSR's skip-broken rule.
-# Non-goals (gating only): free-text redact/replace, session time-travel.
-# Model-context inject lives in guidance-inject.sh (PreInvocation).
+# Full contract lives in docs/ARCHITECTURE.md (stream-gate contract):
+# enabled gate rules apply in file order, first match denies, fail-open
+# otherwise. Non-goals (gating only): free-text redact/replace, session
+# time-travel. Model-context inject lives in guidance-inject.sh (PreInvocation).
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+lib="$here/lib-runmatch.py"
 rules_file="${STREAM_RULES:-$here/../stream-rules.json}"
 
 payload=""
@@ -16,9 +16,31 @@ if [ ! -t 0 ]; then
   payload=$(cat 2>/dev/null || true)
 fi
 
-result=$(python3 - "$payload" "$rules_file" <<'PYEOF' 2>/dev/null
+result=$(python3 - "$payload" "$rules_file" "$lib" <<'PYEOF' 2>/dev/null
+import importlib.util
 import json, re, sys
 raw, path = sys.argv[1], sys.argv[2]
+_lib_path = sys.argv[3] if len(sys.argv) > 3 else ""
+try:
+    _spec = importlib.util.spec_from_file_location("lib_runmatch", _lib_path)
+    _lib = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_lib)
+    leaves, strip_prose = _lib.leaves, _lib.strip_prose
+except Exception:
+    def leaves(o):
+        if isinstance(o, str):
+            yield o
+        elif isinstance(o, dict):
+            for v in o.values():
+                yield from leaves(v)
+        elif isinstance(o, list):
+            for v in o:
+                yield from leaves(v)
+    def strip_prose(s):
+        s = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?^\1\s*$", " ", s, flags=re.DOTALL | re.MULTILINE)
+        s = re.sub(r"'[^']*'", " ", s)
+        s = re.sub(r'"(?:[^"\\]|\\.)*"', " ", s)
+        return s
 try:
     data = json.loads(raw) if raw.strip() else {}
 except Exception:
@@ -34,20 +56,6 @@ call = data.get("toolCall") or {}
 tname = call.get("name", "") or ""
 args = call.get("args") or {}
 blob = json.dumps(args, sort_keys=True, default=str)
-def leaves(o):
-    if isinstance(o, str):
-        yield o
-    elif isinstance(o, dict):
-        for v in o.values():
-            yield from leaves(v)
-    elif isinstance(o, list):
-        for v in o:
-            yield from leaves(v)
-def strip_prose(s):
-    s = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?^\1\s*$", " ", s, flags=re.DOTALL | re.MULTILINE)
-    s = re.sub(r"'[^']*'", " ", s)
-    s = re.sub(r'"(?:[^"\\]|\\.)*"', " ", s)
-    return s
 stripped = strip_prose("\n".join(leaves(args)))
 rules = spec.get("rules") if isinstance(spec, dict) else None
 if not isinstance(rules, list):
