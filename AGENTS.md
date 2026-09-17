@@ -4,7 +4,7 @@
 
 - Project: `agy-minimal` (workspace `wrasse`)
 - Primary runtime(s): `bash`, `agy` (Antigravity CLI 1.1.27)
-- Main entrypoint(s): `agy --agent agy-frontend`, `plugins/agy-minimal/bin/{ffgrep,fffind,hasline,agy-doctor,tfsearch,tffetch}`
+- Main entrypoint(s): `agy` (no flags — base minimal tools, frontend guidelines load automatically for UI/UX work), `plugins/agy-minimal/bin/{ffgrep,fffind,hasline,agy-doctor,tfsearch,tffetch}`
 
 ## Harness Commands
 
@@ -28,9 +28,9 @@ Run from repository root:
 
 ## Minimal Prompt
 
-- Session agent: `plugins/agy-frontend/agents/agy-frontend.md`; plain `agy` already loads both plugins (guards+rules+skills) — the single persona is frontend-specialized.
+- Session model: plain `agy` loads both plugins with no flags — base is agy-minimal (tools + discipline), frontend guidelines activate only for UI/UX/FE design work; `--agent agy-frontend` forces the frontend specialist (`plugins/agy-frontend/agents/agy-frontend.md`).
 - Keep `AGENTS.md` to hard rules only; move workflows to `skills/<name>/SKILL.md`.
-- Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags — deny-observed); `-p` is read-only, interactive session executes (see `skills/cli-tweaks/SKILL.md`).
+- Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags); `-p` is read-only, interactive session executes — deny-scope + nested-Orca notes live in `skills/cli-tweaks/SKILL.md`.
 - Diagnose CLI state with `agy-doctor` via `run_command` before touching global config.
 - Disable unused plugins / idle MCP servers; prefer Lazy over Eager.
 
@@ -81,9 +81,9 @@ Run from repository root:
 - guidance notice: one-shot `ephemeralMessage` injected at PreInvocation, once per rule per conversation.
 - global config: `~/.gemini` files (`settings.json`, `hooks.json`) — user-owned, diagnose with `agy-doctor`, never mutate silently.
 - plugin source of truth: `plugins/agy-minimal/` in this repo; the global install is a deploy target.
-- agy-frontend: taste-layer plugin (`plugins/agy-frontend/`) — the single persona + principles, identity, and verification skills; requires agy-minimal wrappers, ships no bins/hooks.
-- core: `agy-minimal` plugin — owns the tool surface (deny-hooks + wrappers); installed, stock `agy` is fast/minimal/efficient with no flags.
-- extension (taste layer): `agy-frontend` plugin — adds UI/UX principles (`better-*`) + identity (`design-taste`) + on-demand verification (`checklist-design`); requires the core, ships no bins/hooks.
+- agy-frontend: taste-layer plugin (`plugins/agy-frontend/`) — guideline skills (principles, identity, verification) active only for UI/UX/FE design work, plus the opt-in specialist persona; requires agy-minimal wrappers, ships no bins/hooks.
+- core: `agy-minimal` plugin — the base: owns the tool surface (deny-hooks + wrappers) and base coding discipline; installed, stock `agy` runs general-purpose with no flags.
+- extension (taste layer): `agy-frontend` plugin — conditional UI/UX guidelines (`better-*` principles + `design-taste` identity + on-demand `checklist-design` verification); requires the core, ships no bins/hooks.
 - checklist-design: itemized design verification (audit vs critique); all 129 checklists bundled as local references, only the match read per audit.
 - `-p` mode: non-interactive `agy` run; read-only, agent emits copy-paste commands.
 - `#TAG`: `hasline` snapshot anchor (`[FILE#TAG]`); stale tag aborts, re-`show`.

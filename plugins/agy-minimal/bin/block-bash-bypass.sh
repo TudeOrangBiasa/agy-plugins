@@ -1,24 +1,45 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016  # backticks in the deny reason are literal markdown, not expansion.
 # block-bash-bypass.sh — PreToolUse hook on run_command for agy.
-# Denies raw search/edit commands that bypass plugin wrappers:
-# rg/fd/recursive-grep -> ffgrep/fffind; sed -i/perl -pi -> hasline.
-# Wrapper-headed segments (ffgrep/fffind/hasline/agy-doctor/tfsearch/tffetch) are
-# skipped; quoted strings and heredoc bodies are prose, not code. Only unbounded
-# discovery is denied (use fffind): find without -maxdepth 0/1, tree, locate,
-# ls -R. Single-level listing (plain ls, ls -d, bounded find) stays allowed —
-# denying it only adds deny+retry tokens with zero savings.
-# Reads hook payload on stdin; allow (incl. parse failure) is fail-open.
+# NEVER use rg/fd/ripgrep, recursive grep, sed -i/perl -pi, unbounded find,
+# tree/locate, or ls -R here — use ffgrep/fffind/hasline via run_command.
+# Full deny/allow contract lives in docs/ARCHITECTURE.md (bypass hook output
+# contract); what stays here by design: single-level listing (plain ls, ls -d,
+# bounded find) stays allowed — denying it only adds deny+retry tokens with
+# zero savings. Reads hook payload on stdin; allow (incl. parse failure) is
+# fail-open.
 set -euo pipefail
 
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+lib="$here/lib-runmatch.py"
 payload=""
 if [ ! -t 0 ]; then
   payload=$(cat 2>/dev/null || true)
 fi
 
-result=$(python3 - "$payload" <<'EOF' 2>/dev/null
+result=$(python3 - "$payload" "$lib" <<'EOF' 2>/dev/null
+import importlib.util
 import json, re, sys
 raw = sys.argv[1] if len(sys.argv) > 1 else ""
+_lib_path = sys.argv[2] if len(sys.argv) > 2 else ""
+try:
+    _spec = importlib.util.spec_from_file_location("lib_runmatch", _lib_path)
+    _lib = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_lib)
+    strip_prose, split_segments, segment_head = _lib.strip_prose, _lib.split_segments, _lib.segment_head
+except Exception:
+    def strip_prose(s):
+        s = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?^\1\s*$", " ", s, flags=re.DOTALL | re.MULTILINE)
+        s = re.sub(r"'[^']*'", " ", s)
+        s = re.sub(r'"(?:[^"\\]|\\.)*"', " ", s)
+        return s
+    def split_segments(cmd):
+        return re.split(r"[;&|\n]+", cmd)
+    def segment_head(seg):
+        seg = re.sub(r"^(sudo\s+)+", "", seg.strip())
+        if not seg:
+            return ""
+        return seg.split(None, 1)[0].rsplit("/", 1)[-1]
 try:
     data = json.loads(raw) if raw.strip() else {}
 except Exception:
@@ -29,9 +50,7 @@ cmd = args.get("CommandLine", args.get("commandLine", args.get("command_line", "
 if not isinstance(cmd, str):
     cmd = str(cmd)
 # Prose is not code: drop heredoc bodies and quoted strings ($(...) is kept).
-cmd = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?^\1\s*$", " ", cmd, flags=re.DOTALL | re.MULTILINE)
-cmd = re.sub(r"'[^']*'", " ", cmd)
-cmd = re.sub(r'"(?:[^"\\]|\\.)*"', " ", cmd)
+cmd = strip_prose(cmd)
 allow_heads = {"ffgrep", "fffind", "hasline", "agy-doctor", "tfsearch", "tffetch"}
 rules = [
     (r"(?:^|[\s;|&(`$])(rg|ripgrep|fdfind|fd)(?=[\s]|$)", "ffgrep / fffind"),
@@ -40,12 +59,11 @@ rules = [
     (r"\bperl\b[^\n]*?(?:^|[\s;|&(`$])-i[^\s|&;`$]*", "hasline"),
 ]
 denied = None
-for seg in re.split(r"[;&|\n]+", cmd):
+for seg in split_segments(cmd):
     seg = seg.strip()
     if not seg:
         continue
-    first = re.sub(r"^(sudo\s+)+", "", seg).split(None, 1)[0]
-    head = first.rsplit("/", 1)[-1]
+    head = segment_head(seg)
     if head in allow_heads:
         continue
     if head in ("tree", "locate"):

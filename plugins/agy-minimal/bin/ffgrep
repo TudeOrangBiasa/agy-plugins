@@ -9,24 +9,12 @@ if [ $# -lt 1 ]; then
   exit 2
 fi
 
-pattern="$1"; shift
-path="."
-extra=()
-if [ $# -gt 0 ]; then
-  if [ "$1" = "--" ]; then
-    shift
-    extra=("$@")
-  else
-    path="$1"; shift
-    if [ $# -gt 0 ] && [ "$1" = "--" ]; then
-      shift
-      extra=("$@")
-    elif [ $# -gt 0 ]; then
-      extra=("$@")
-    fi
-  fi
-fi
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=./lib-ffargs.sh disable=SC1091
+. "$here/lib-ffargs.sh"
+ff_parse_args "$@"
 
+# shellcheck disable=SC2154  # `extra` assigned by sourced lib-ffargs.sh (ff_parse_args).
 exec rg --no-heading --line-number --color=never --smart-case --hidden \
   --glob '!.git/*' --glob '!node_modules/*' --glob '!target/*' \
   "${extra[@]}" -- "$pattern" "$path"

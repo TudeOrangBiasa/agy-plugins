@@ -1,7 +1,7 @@
 # ADR-0025: Single frontend persona
 
 Date: 2026-09-10
-Status: Accepted
+Status: Superseded by ADR-0026 (single frontend-specialized voice replaced by base-default session with conditional frontend + opt-in specialist)
 
 ## Context
 
