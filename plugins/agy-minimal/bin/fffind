@@ -14,5 +14,7 @@ here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 . "$here/lib-ffargs.sh"
 ff_parse_args "$@"
 
+command -v fd >/dev/null 2>&1 || { echo "fffind: fd (fd-find) not found on PATH" >&2; exit 127; }
+
 # shellcheck disable=SC2154  # `extra` assigned by sourced lib-ffargs.sh (ff_parse_args).
 exec fd --color=never --hidden --exclude '.git' "${extra[@]}" -- "$pattern" "$path"
