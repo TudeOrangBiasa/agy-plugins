@@ -19,5 +19,8 @@ the deploy script, with absolute command paths.
 
 - Rules alone are not a safety net; forced native-tool attempts need the
   hook to deny with a reason.
-- ADR-0005 later moved hooks into the plugin bundle with `./bin/` relative
-  commands and removed the global merge.
+- ADR-0005 moved hooks into the plugin bundle with `./bin/` relative
+  commands (assumed hook cwd = plugin root); ADR-0027 keeps repo source
+  portable (`$HOME`-anchored) and expands to literal absolute paths at
+  deploy time, after the exit-127 probe proved hook cwd = session
+  launch dir.

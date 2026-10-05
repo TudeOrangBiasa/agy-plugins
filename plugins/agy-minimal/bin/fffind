@@ -9,7 +9,7 @@ if [ $# -lt 1 ]; then
   exit 2
 fi
 
-here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+here=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)
 # shellcheck source=./lib-ffargs.sh disable=SC1091
 . "$here/lib-ffargs.sh"
 ff_parse_args "$@"
