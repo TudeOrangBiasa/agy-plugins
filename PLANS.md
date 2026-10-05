@@ -8,7 +8,7 @@
 
 ## Constraints
 
-- Runtime/tooling constraints: `agy` 1.1.27, `bash`, `rg`, `fd`, `python3` present; `ffgrep`/`fffind`/`hasline` vendored in plugin `bin/`; TinyFish MCP needs one-time OAuth.
+- Runtime/tooling constraints: `agy` 1.1.27, `bash`, `rg`, `fd`, `python3` present; `ffgrep`/`fffind`/`hasline` vendored in plugin `bin/`; TinyFish REST needs `TINYFISH_API_KEY` in env.
 - Security/compliance constraints: hooks deny with reason, no silent fallback; no secrets in logs.
 - Performance/reliability constraints: smoke < 30s; no network in smoke/check.
 
@@ -24,7 +24,7 @@
    - Expected output: harness files present, `audit_harness.sh` PASS.
    - Verification: audit output + `git status --short`.
 2. Step: Minimal agent + tool overrides
-   - Expected output: `agy-minimal.md` loads via `agy --agent agy-minimal`; native search denied; `ffgrep`/`fffind` return expected hits.
+   - Expected output: stock `agy` runs general-purpose with no flags; native search denied; `ffgrep`/`fffind` return expected hits.
    - Verification: `scripts/harness/smoke.sh` + `test.sh` green.
 3. Step: Docs + harness wiring (ARCHITECTURE/OBSERVABILITY, lint/typecheck)
    - Expected output: boundaries + event fields documented; `make check` green offline.
@@ -44,10 +44,10 @@
 
 ## Decision Log
 
-Decisions live in `docs/adr/` (ADR-0001–ADR-0026, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
+Decisions live in `docs/adr/` (ADR-0001–ADR-0028, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
 
 ## Final Verification
 
-- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live forced `grep_search` (denied with plugin reason text), `agy mcp list` (tinyfish pending OAuth).
+- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live forced `grep_search` (denied with plugin reason text), `tfsearch` without key (exit 2 missing-key guard).
 - Key outputs: full pipeline green on plugin paths; legacy per-file installs cleaned; `README.md` publish instructions.
-- Follow-up tasks: one-time TinyFish OAuth (`agy mcp` UI); `~/AGENTS.md` diet; artifacts/memory trim measurement (`/context` before/after); post-compaction verdict — move `--add-dir` out of always-on (personas + rules) into cli-tweaks skill + README + deploy echo, keep rules to invariants only.
+- Follow-up tasks: `~/AGENTS.md` diet; artifacts/memory trim measurement (`/context` before/after); post-compaction verdict — move `--add-dir` out of always-on (personas + rules) into cli-tweaks skill + README + deploy echo, keep rules to invariants only.

@@ -84,10 +84,10 @@ Keep generated code formatted cleanly without manual cleanup turns. Enable autom
 
 ```bash
 # Project-local hook
-cp hooks.json.example .agents/hooks.json
+cp skills/agystack/hooks.json.example .agents/hooks.json
 
 # Or user-global hook
-cp hooks.json.example ~/.gemini/config/hooks.json
+cp skills/agystack/hooks.json.example ~/.gemini/config/hooks.json
 ```
 
 Whenever an agent uses `write_to_file`, the hook triggers `skills/poteto-mode/scripts/hooks/post_tool_lint.py`, running `ruff format` on Python files, and `prettier --write` or `biome format --write` on JavaScript and TypeScript files if installed (excluding `.json` to preserve comments and never running on `replace_file_content` to prevent line-number drift).
@@ -122,7 +122,7 @@ The hook evaluates `run_command` invocations for destructive signatures:
 
 When running in headless environments (`NON_INTERACTIVE="1"`, `CI="true"`, or `CLOUD_RUN_TASK_INDEX` in Cloud Run worker containers), the hook automatically rejects destructive commands (`"decision": "reject"`) to prevent catastrophic corruption in unattended runs or automated test suites.
 
-To activate, copy or merge `hooks.json.example` into `.agents/hooks.json` (project-local) or `~/.gemini/config/hooks.json` (user-global).
+To activate, copy or merge `skills/agystack/hooks.json.example` into `.agents/hooks.json` (project-local) or `~/.gemini/config/hooks.json` (user-global).
 
 ## Coordinator Code Delegation Guard with Antigravity PreToolUse Hooks
 
