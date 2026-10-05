@@ -56,3 +56,7 @@ Status: self-contained to a fault. `docs/guide/README.md` teaches the full potet
 ### (20) `-p` mechanism accounts incompatible
 
 Status: three un-cross-referenced accounts of the same contract. Root `README.md` states a blanket platform rule (no `run_command` in `-p`; agent emits copy-paste), `plugins/agy-minimal/skills/cli-tweaks/SKILL.md` gives the hook version (nested-Orca `orca-status` ask-hook denies what `-p` cannot approve, sometimes surfacing as `failed to execute`), and ADR-0004 gives the toolset-probe version (`run_command` absent and `write_to_file` unregistered in `-p`; hook payloads carry no mode flag). Fix: reconcile into one account with cross-refs — platform toolset absence as the base rule, nested approval-gating as the special case. Deferred because all three agree on the observable contract (never execute in `-p`; emit copy-paste), so the dispute only matters when debugging a `-p` failure.
+
+## Known issue (2026-10-05, post-merge note)
+
+`tests/test_hooks.py` `TestPreToolSafetyHook` bare-force-push cases (7 subtests) pass on `main`/`master` and fail on feature branches by design: `is_trunk_force_push` allows force-push on feature branches, while the tests assume bare force-push is always destructive. Record only — do not fix the hook or the tests here.
