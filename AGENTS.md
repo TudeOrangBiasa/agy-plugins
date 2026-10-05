@@ -20,8 +20,8 @@ Run from repository root:
 ## Tooling Overrides
 
 - Wrapper-first: search/edit/diagnose go through plugin wrappers (`ffgrep`/`fffind`, `hasline`, `agy-doctor`); native tools stay denied.
-- Search via `run_command`: `ffgrep <pattern> [path]`, `fffind <pattern> [path]` (see `skills/ff-search/SKILL.md`).
-- Edit via `run_command`: `hasline show`, then `hasline apply` (see `skills/hasline-edit/SKILL.md`); stale `#TAG` aborts — re-`show`, never guess.
+- Search via `run_command`: `ffgrep <pattern> [path]`, `fffind <pattern> [path]` (see `plugins/agy-minimal/skills/ff-search/SKILL.md`).
+- Edit via `run_command`: `hasline show`, then `hasline apply` (see `plugins/agy-minimal/skills/hasline-edit/SKILL.md`); stale `#TAG` aborts — re-`show`, never guess.
 - Diagnose via `run_command`: `agy-doctor` before touching global config.
 - Native search/edit tools and raw-shell bypasses (`rg|fd`, recursive `grep`, `sed -i`/`perl -pi`, unbounded `find`, `tree|locate`, `ls -R`) are denied by plugin hooks with reasons pointing back here; plain `ls`, `ls -d`, bounded `find` stay allowed.
 - Hook `command` paths are `$HOME`-anchored to the installed plugin bin in repo source (portable); deploy expands `$HOME` to the literal absolute path (runner env expansion unproven; hook cwd = session launch dir, so relative `./bin/...` resolves nowhere — proven by exit-127 probe).
@@ -31,7 +31,7 @@ Run from repository root:
 
 - Session model: plain `agy` runs general-purpose with no flags — agy-minimal (tools + discipline).
 - Keep `AGENTS.md` to hard rules only; move workflows to `skills/<name>/SKILL.md`.
-- Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags); `-p` is read-only, interactive session executes — deny-scope + nested-Orca notes live in `skills/cli-tweaks/SKILL.md`.
+- Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags); `-p` is read-only, interactive session executes — deny-scope + nested-Orca notes live in `plugins/agy-minimal/skills/cli-tweaks/SKILL.md`.
 - Diagnose CLI state with `agy-doctor` via `run_command` before touching global config.
 - Disable unused plugins / idle MCP servers; prefer Lazy over Eager.
 

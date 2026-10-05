@@ -10,7 +10,7 @@ global `~/.gemini` files do not — those need a manual/script step.
 
 ## Can (travels with this plugin)
 
-- `rules/AGENTS.md` — invocation defaults (base no-flags + conditional frontend routing); the opt-in frontend specialist persona lives in the frontend plugin (read-only `-p` there).
+- `rules/AGENTS.md` — invocation defaults (base no-flags session model).
 - `hooks.json` — deny guards (search/edit).
 - `skills/*` — runbooks, including this one.
 - `mcp_config.json` — lazy MCP servers.

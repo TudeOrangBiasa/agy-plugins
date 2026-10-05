@@ -1,7 +1,7 @@
 # agy-minimal
 
-Portable pi-agent-like harness plugins for the Antigravity CLI (`agy`).
-Base (`agy-minimal`): minimal tools + discipline (fast `fff` search binaries,
+Portable pi-agent-like harness plugin for the Antigravity CLI (`agy`).
+Base (`agy-minimal`): minimal tools + discipline (fast `ffgrep`/`fffind` search wrappers,
 anchored `hasline` edits, deny-hooks for native tools, lazy TinyFish web
 tools) — installed, stock `agy` runs general-purpose with no flags.
 
@@ -36,7 +36,7 @@ Web (token-cheap, free): `tfsearch <query>`, `tffetch <url>...` — needs
 ## Layout
 
 ```text
-plugins/agy-minimal/       # core: tool surface (deny-hooks + wrappers)
+plugins/agy-minimal/       # deploy artifact: tool surface (deny-hooks + wrappers)
 ├── plugin.json            # manifest
 ├── hooks.json             # deny grep_search|find_by_name, write_to_file|replace_file_content
 ├── rules/AGENTS.md        # portable overrides (travel with the plugin)
@@ -46,12 +46,20 @@ plugins/agy-minimal/       # core: tool surface (deny-hooks + wrappers)
 ├── skills/tf-web/         # tfsearch/tffetch runbook
 ├── skills/…               # + cli-tweaks, ts-review, stream-rules, lazy-senior
 ├── bin/                   # ffgrep fffind hasline agy-doctor tfsearch tffetch stream-gate guidance-inject block-*.sh
-└── mcp_config.json        # TinyFish search/fetch (lazy; one-time OAuth)
+└── mcp_config.json        # TinyFish MCP server (lazy; REST key via `TINYFISH_API_KEY`)
 ```
 
-Repo root holds dev harness only: `AGENTS.md`, `CONTEXT.md`, `PLANS.md`, `docs/`
-(ARCHITECTURE, OBSERVABILITY, `adr/`), `Makefile.harness`, `scripts/harness/*`,
-`scripts/deploy-global.sh`.
+```text
+repo root                  # dev checkout (deploy ships only plugins/agy-minimal/)
+├── AGENTS.md CONTEXT.md PLANS.md
+├── skills/                # agystack framework: poteto-mode + playbooks, agystack/ (hooks.json.example), …
+├── rules/AGENTS.md        # workspace dev discipline (subagent delegation); + agystack-models.md
+├── agents/                # poteto-agent, comment-sicko
+├── tests/ + pyproject.toml
+├── docs/                  # ARCHITECTURE, OBSERVABILITY, adr/, guide/, agents/
+├── Makefile(.harness) + scripts/harness/* + scripts/deploy-global.sh
+└── .scratch/ (gitignored runtime)
+```
 
 ## Verify
 
@@ -61,8 +69,8 @@ make ci   # smoke + lint + typecheck + test, offline
 
 ## TinyFish auth
 
-First MCP use opens a browser OAuth flow (TinyFish account required).
-Search + Fetch are free; Agent/Browser draw from wallet.
+`tfsearch`/`tffetch` call the TinyFish REST API with `TINYFISH_API_KEY` in env
+(never committed; get a key at agent.tinyfish.ai/api-keys). No OAuth, no wallet.
 
 
 ## Decisions

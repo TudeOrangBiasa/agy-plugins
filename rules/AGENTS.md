@@ -36,7 +36,7 @@ Mirroring pstack in Cursor, enforce strict separation between coordination and c
 
 Always use the most direct, deterministic tool surface for each task:
 
-1. **Filesystem Tools (`view_file`, `grep_search`, `find_by_name`)**: Ground truth for code, configs, AST, tests, and repo docs. Never use a browser or UI tools to view, search, or scroll through code or repository files.
+1. **Filesystem Tools (`view_file` read-only; search/edit via wrappers)**: `view_file` is ground truth for code, configs, AST, tests, and repo docs. `grep_search`/`find_by_name` are DENIED by plugin hooks — search via `run_command` (`ffgrep`/`fffind`); `write_to_file`/`replace_file_content` are DENIED — edit via `hasline`. Never use a browser or UI tools to view, search, or scroll through code or repository files.
 2. **CLI / Runtime Tools (`run_command`)**: Test suites, API endpoints, build/server logs, process lifecycles, and exit codes.
 3. **Browser Tools (`browser_subagent` / Chrome DevTools MCP)**: Strictly for live UI interaction, DOM layout, CSS styles, user events, and rendered visual screenshots.
 
