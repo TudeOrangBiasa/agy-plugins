@@ -51,5 +51,4 @@ for rationale, bad/good examples, and exception wording.
 
 ## Verify
 
-- `tsc --noEmit` proves compilation, not rule compliance; re-check the
-  triggered pattern is gone.
+- `tsc --noEmit` proves compilation, not rule compliance; re-check the triggered pattern is gone. Type-system grounding: `skills/typescript-best-practices/SKILL.md`.

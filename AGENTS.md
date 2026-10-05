@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-- Project: `agy-minimal` (workspace `wrasse`)
-- Primary runtime(s): `bash`, `agy` (Antigravity CLI 1.1.27)
-- Main entrypoint(s): `agy` (no flags — base minimal tools, frontend guidelines load automatically for UI/UX work), `plugins/agy-minimal/bin/{ffgrep,fffind,hasline,agy-doctor,tfsearch,tffetch}`
+- Project: `agy-minimal` (workspace `wrasse`) — single agystack-based project.
+- Primary runtime(s): `bash`, `agy` (Antigravity CLI 1.1.27), `python3` (pytest via `test` extra in `pyproject.toml`).
+- Main entrypoint(s): `agy` (no flags — base minimal tools), `plugins/agy-minimal/bin/{ffgrep,fffind,hasline,agy-doctor,tfsearch,tffetch}`, `poteto-mode`/`agystack` skills + playbooks (`skills/poteto-mode/`, `skills/agystack/`).
 
 ## Harness Commands
 
@@ -19,16 +19,17 @@ Run from repository root:
 
 ## Tooling Overrides
 
+- Wrapper-first: search/edit/diagnose go through plugin wrappers (`ffgrep`/`fffind`, `hasline`, `agy-doctor`); native tools stay denied.
 - Search via `run_command`: `ffgrep <pattern> [path]`, `fffind <pattern> [path]` (see `skills/ff-search/SKILL.md`).
 - Edit via `run_command`: `hasline show`, then `hasline apply` (see `skills/hasline-edit/SKILL.md`); stale `#TAG` aborts — re-`show`, never guess.
 - Diagnose via `run_command`: `agy-doctor` before touching global config.
 - Native search/edit tools and raw-shell bypasses (`rg|fd`, recursive `grep`, `sed -i`/`perl -pi`, unbounded `find`, `tree|locate`, `ls -R`) are denied by plugin hooks with reasons pointing back here; plain `ls`, `ls -d`, bounded `find` stay allowed.
-- Hook `command` paths are `./bin/...` relative to the plugin root (hook cwd = dir containing `hooks.json`).
-- Deploy: `scripts/deploy-global.sh` (`plugins/agy-minimal/` is source of truth, global install is target).
+- Hook `command` paths are `$HOME`-anchored to the installed plugin bin in repo source (portable); deploy expands `$HOME` to the literal absolute path (runner env expansion unproven; hook cwd = session launch dir, so relative `./bin/...` resolves nowhere — proven by exit-127 probe).
+- Skills: agentic rigor via `skills/agystack/SKILL.md` (framework entry → `skills/poteto-mode/SKILL.md` + 23 playbooks); non-trivial code edits delegate to `poteto-agent` per `rules/AGENTS.md`.
 
 ## Minimal Prompt
 
-- Session model: plain `agy` loads both plugins with no flags — base is agy-minimal (tools + discipline), frontend guidelines activate only for UI/UX/FE design work; `--agent agy-frontend` forces the frontend specialist (`plugins/agy-frontend/agents/agy-frontend.md`).
+- Session model: plain `agy` runs general-purpose with no flags — agy-minimal (tools + discipline).
 - Keep `AGENTS.md` to hard rules only; move workflows to `skills/<name>/SKILL.md`.
 - Pass `--add-dir "$PWD"` only when the workspace has `.agents/` customizations (installed global plugin loads without flags); `-p` is read-only, interactive session executes — deny-scope + nested-Orca notes live in `skills/cli-tweaks/SKILL.md`.
 - Diagnose CLI state with `agy-doctor` via `run_command` before touching global config.
@@ -81,10 +82,7 @@ Run from repository root:
 - guidance notice: one-shot `ephemeralMessage` injected at PreInvocation, once per rule per conversation.
 - global config: `~/.gemini` files (`settings.json`, `hooks.json`) — user-owned, diagnose with `agy-doctor`, never mutate silently.
 - plugin source of truth: `plugins/agy-minimal/` in this repo; the global install is a deploy target.
-- agy-frontend: taste-layer plugin (`plugins/agy-frontend/`) — guideline skills (principles, identity, verification) active only for UI/UX/FE design work, plus the opt-in specialist persona; requires agy-minimal wrappers, ships no bins/hooks.
 - core: `agy-minimal` plugin — the base: owns the tool surface (deny-hooks + wrappers) and base coding discipline; installed, stock `agy` runs general-purpose with no flags.
-- extension (taste layer): `agy-frontend` plugin — conditional UI/UX guidelines (`better-*` principles + `design-taste` identity + on-demand `checklist-design` verification); requires the core, ships no bins/hooks.
-- checklist-design: itemized design verification (audit vs critique); all 129 checklists bundled as local references, only the match read per audit.
 - `-p` mode: non-interactive `agy` run; read-only, agent emits copy-paste commands.
 - `#TAG`: `hasline` snapshot anchor (`[FILE#TAG]`); stale tag aborts, re-`show`.
 
@@ -101,3 +99,7 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 ### Domain docs
 
 Single-context: `docs/adr/` at the repo root (`CONTEXT.md` created lazily by `/domain-modeling`). See `docs/agents/domain.md`.
+
+### Framework
+
+Agentic rigor: `skills/agystack/SKILL.md` (framework entry) → `skills/poteto-mode/SKILL.md` + playbooks; executor `agents/poteto-agent.md`.

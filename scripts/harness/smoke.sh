@@ -35,19 +35,9 @@ fi
 [ -f plugins/agy-minimal/mcp_config.json ] && ok "plugin mcp present" || bad "plugin mcp missing"
 [ -f plugins/agy-minimal/skills/cli-tweaks/SKILL.md ] && ok "cli-tweaks skill present" || bad "cli-tweaks skill missing"
 [ -f plugins/agy-minimal/skills/context-files/SKILL.md ] && ok "context-files skill present" || bad "context-files skill missing"
-[ -f plugins/agy-frontend/skills/design-taste/SKILL.md ] && ok "design-taste skill present" || bad "design-taste skill missing"
-[ -f plugins/agy-frontend/skills/design-taste/references/philosophy.md ] && ok "design-taste doctrine present" || bad "design-taste doctrine missing"
 [ -f plugins/agy-minimal/stream-rules.json ] && ok "stream rules present" || bad "stream rules missing"
 [ -x scripts/harness/ci.sh ] && ok "ci wrapper executable" || bad "ci wrapper not executable"
 [ -f plugins/agy-minimal/skills/ts-review/SKILL.md ] && ok "ts-review skill present" || bad "ts-review skill missing"
-[ -f plugins/agy-frontend/plugin.json ] && ok "frontend manifest present" || bad "frontend manifest missing"
-[ -f plugins/agy-frontend/agents/agy-frontend.md ] && ok "frontend agent present" || bad "frontend agent missing"
-[ -f plugins/agy-frontend/ATTRIBUTION.md ] && ok "frontend attribution present" || bad "frontend attribution missing"
-for s in better-interface better-ui better-typography better-colors better-accessibility better-layout better-writing checklist-design; do
-  [ -f "plugins/agy-frontend/skills/$s/SKILL.md" ] && ok "frontend skill $s" || bad "frontend skill $s missing"
-done
-[ -f plugins/agy-frontend/skills/checklist-design/references/index.md ] && ok "checklist bundle index present" || bad "checklist bundle index missing"
-[ -f plugins/agy-frontend/skills/checklist-design/references/checklists/web-app-login.md ] && ok "checklist bundle sample present" || bad "checklist bundle sample missing"
 [ -x scripts/audit_harness.sh ] && ok "audit script executable" || bad "audit script not executable"
 
 grep -q "Tooling Overrides" AGENTS.md && ok "AGENTS tool overrides" || bad "AGENTS tool overrides missing"

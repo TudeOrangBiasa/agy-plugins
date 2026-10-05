@@ -14,7 +14,7 @@ import json, sys
 d = json.load(open('plugins/agy-minimal/hooks.json'))
 h = d['enforce-custom-search']['PreToolUse'][0]
 assert h['matcher'] == 'grep_search|find_by_name', h
-assert h['hooks'][0]['command'] == './bin/block-native-search.sh', h
+assert h['hooks'][0]['command'] == '$HOME/.gemini/config/plugins/agy-minimal/bin/block-native-search.sh', h
 EOF
 then
   echo "[ok] hooks.json schema"
@@ -27,7 +27,7 @@ import json
 d = json.load(open('plugins/agy-minimal/hooks.json'))
 h = d['enforce-hasline-edit']['PreToolUse'][0]
 assert h['matcher'] == 'write_to_file|replace_file_content', h
-assert h['hooks'][0]['command'] == './bin/block-native-edit.sh', h
+assert h['hooks'][0]['command'] == '$HOME/.gemini/config/plugins/agy-minimal/bin/block-native-edit.sh', h
 EOF
 then
   echo "[ok] edit hook schema"
@@ -83,7 +83,7 @@ import json
 d = json.load(open('plugins/agy-minimal/hooks.json'))
 h = d['stream-rules']['PreToolUse'][0]
 assert h['matcher'] == '*', h
-assert h['hooks'][0]['command'] == './bin/stream-gate.sh', h
+assert h['hooks'][0]['command'] == '$HOME/.gemini/config/plugins/agy-minimal/bin/stream-gate.sh', h
 EOF
 then
   echo "[ok] stream-rules hook wiring"
@@ -95,7 +95,7 @@ if python3 - <<'EOF'
 import json
 d = json.load(open('plugins/agy-minimal/hooks.json'))
 h = d['guidance-inject']['PreInvocation'][0]
-assert h['command'] == './bin/guidance-inject.sh', h
+assert h['command'] == '$HOME/.gemini/config/plugins/agy-minimal/bin/guidance-inject.sh', h
 EOF
 then
   echo "[ok] guidance-inject hook wiring"
@@ -103,21 +103,12 @@ else
   fail=1
 fi
 
-# undocumented skills:/agents: fields must stay out (unload risk for plugin skills)
-a=plugins/agy-frontend/agents/agy-frontend.md
-if grep -Eq '^(skills|agents):' "$a"; then
-  bad "undocumented frontmatter present (skills:/agents:) in $a"
-else
-  ok "no undocumented frontmatter"
-fi
-if python3 -c 'import json; assert json.load(open("plugins/agy-frontend/plugin.json")).get("name") == "agy-frontend"'; then
-  echo "[ok] frontend manifest"
+# plugin manifest name matches directory (single-plugin invariant)
+if python3 -c 'import json; assert json.load(open("plugins/agy-minimal/plugin.json")).get("name") == "agy-minimal"'; then
+  echo "[ok] minimal manifest"
 else
   fail=1
 fi
-for k in 'name: agy-frontend' 'mainAgent: true' 'subagent: false'; do
-  grep -qF "$k" plugins/agy-frontend/agents/agy-frontend.md && ok "frontend $k" || bad "frontend missing: $k"
-done
 # wrapper contracts: usage text present (wrappers exit 2; neutralize pipefail)
 { plugins/agy-minimal/bin/ffgrep 2>&1 || true; } | grep -q 'usage: ffgrep' && ok "ffgrep usage contract" || bad "ffgrep usage contract"
 { plugins/agy-minimal/bin/fffind 2>&1 || true; } | grep -q 'usage: fffind' && ok "fffind usage contract" || bad "fffind usage contract"

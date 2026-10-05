@@ -122,60 +122,60 @@ echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny grep -R" || bad "by
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"sed -i s/a/b/ f"}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "hasline" && ok "bypass deny sed -i" || bad "bypass deny sed -i: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"make ci"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow plain command" || bad "bypass allow make: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow plain command" || bad "bypass allow make: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"agy agents | grep -q agy-minimal"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow pipe grep" || bad "bypass allow pipe grep: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow pipe grep" || bad "bypass allow pipe grep: $out"
 out=$("$PBIN/block-bash-bypass.sh" < /dev/null)
-[ "$out" = "{}" ] && ok "bypass allow empty stdin" || bad "bypass empty stdin: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow empty stdin" || bad "bypass empty stdin: $out"
 
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ffgrep rg ."}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow wrapper-headed segment" || bad "bypass wrapper-headed: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow wrapper-headed segment" || bad "bypass wrapper-headed: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ffgrep foo .; rg bar ."}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny raw after wrapper" || bad "bypass raw-after-wrapper: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"echo $(rg foo)"}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny command substitution" || bad "bypass cmdsubst: $out"
 out=$(python3 -c 'import json; print(json.dumps({"toolCall": {"name": "run_command", "args": {"CommandLine": "echo \x27use sed -i never\x27"}}}))' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow quoted prose" || bad "bypass quoted prose: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow quoted prose" || bad "bypass quoted prose: $out"
 out=$(python3 -c 'import json; print(json.dumps({"toolCall": {"name": "run_command", "args": {"CommandLine": "cat > /tmp/p.patch <<EOF\nraw sed -i docs\nEOF"}}}))' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow heredoc prose" || bad "bypass heredoc prose: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow heredoc prose" || bad "bypass heredoc prose: $out"
 
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls -d */"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow ls -d" || bad "bypass ls -d: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow ls -d" || bad "bypass ls -d: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls -R src"}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny ls -R" || bad "bypass ls -R: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"find . -name x"}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny find" || bad "bypass find: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"find . -maxdepth 1 -name x"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow bounded find" || bad "bypass bounded find: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow bounded find" || bad "bypass bounded find: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"tree src"}}}' | "$PBIN/block-bash-bypass.sh")
 echo "$out" | grep -q '"decision":"deny"' && ok "bypass deny tree" || bad "bypass tree: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls -la"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow plain ls" || bad "bypass plain ls: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow plain ls" || bad "bypass plain ls: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls /tmp"}}}' | "$PBIN/block-bash-bypass.sh")
-[ "$out" = "{}" ] && ok "bypass allow ls path" || bad "bypass ls path: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "bypass allow ls path" || bad "bypass ls path: $out"
 
 # stream-gate: named TTSR-style rules (rm guard, secrets, scope, fail-open)
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "gate-rm-rf-root" && ok "stream deny rm -rf /" || bad "stream rm: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /tmp/x"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow rm /tmp" || bad "stream rm /tmp: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow rm /tmp" || bad "stream rm /tmp: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf ./build"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow rm relative" || bad "stream rm relative: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow rm relative" || bad "stream rm relative: $out"
 # NOTE: sk-ant-AbCdEf1234567890 below is a synthetic fixture vector, not a real key.
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"export K=sk-ant-AbCdEf1234567890"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "gate-secret-in-args" && ok "stream deny secret" || bad "stream secret: $out"
 out=$(printf '{"toolCall":{"name":"grep_search","args":{"pattern":"foo"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow other tool" || bad "stream other tool: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow other tool" || bad "stream other tool: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /"}}}' | STREAM_RULES=/nonexistent.json "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow missing rules" || bad "stream missing rules: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow missing rules" || bad "stream missing rules: $out"
 python3 -c 'import json,sys; open(sys.argv[1]+"/sr.json","w").write(json.dumps({"rules":[{"name":"off","type":"gate","scope":["pre_tool_use"],"enabled":False,"matcher":".*","pattern":"rm","reason":"x"}]}))' "$fixture"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /"}}}' | STREAM_RULES="$fixture/sr.json" "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream skip disabled rule" || bad "stream disabled: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream skip disabled rule" || bad "stream disabled: $out"
 
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"export API_KEY=abc123"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "gate-secret-assignment" && ok "stream deny secret assignment" || bad "stream secret assign: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"grep password file"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow secret mention" || bad "stream secret mention: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow secret mention" || bad "stream secret mention: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"deny"' || bad "stream repeat 1: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /"}}}' | "$PBIN/stream-gate.sh")
@@ -192,9 +192,9 @@ echo "$out" | grep -q '"decision":"deny"' && echo "$out" | grep -q "gate-git-dis
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"git push origin main"}}}' | "$PBIN/stream-gate.sh")
 echo "$out" | grep -q '"decision":"ask"' && echo "$out" | grep -q "gate-git-protected-push" && ok "stream ask protected push" || bad "stream protected: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"git push -u origin feat/x"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow feature push" || bad "stream feature push: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow feature push" || bad "stream feature push: $out"
 out=$(printf '{"toolCall":{"name":"run_command","args":{"CommandLine":"git checkout -b feat"}}}' | "$PBIN/stream-gate.sh")
-[ "$out" = "{}" ] && ok "stream allow checkout branch" || bad "stream checkout: $out"
+echo "$out" | grep -q '"decision":"allow"' && ok "stream allow checkout branch" || bad "stream checkout: $out"
 
 # guidance-inject: transcript-triggered ts-no-any notice, once per conversation
 mkdir -p "$fixture/gstate"
@@ -208,7 +208,7 @@ echo "$out" | grep -q "ts-no-any" && ok "guide fires per conversation" || bad "g
 printf '%s\n' '{"step_index":11,"tool_calls":[{"name":"run_command","args":{"CommandLine":"ls /tmp"}}]}' > "$fixture/tr2.jsonl"
 out=$(printf '%s' "{\"conversationId\":\"convC\",\"transcriptPath\":\"$fixture/tr2.jsonl\"}" | GUIDANCE_STATE_DIR="$fixture/gstate" "$PBIN/guidance-inject.sh")
 [ "$out" = "{}" ] && ok "guide quiet without match" || bad "guide quiet: $out"
-out=$(printf '%s' '{"conversationId":"convD","transcriptPath":"/nonexistent.jsonl"}' | GUIDANCE_STATE_DIR="$fixture/gstate" "$PBIN/guidance-inject.sh")
+out=$(printf '%s' "{\"conversationId\":\"convD\",\"transcriptPath\":\"/nonexistent.jsonl\"}" | GUIDANCE_STATE_DIR="$fixture/gstate" "$PBIN/guidance-inject.sh")
 [ "$out" = "{}" ] && ok "guide fail-open missing transcript" || bad "guide missing: $out"
 
 if [ "$fail" -ne 0 ]; then echo "tests FAILED" >&2; exit 1; fi

@@ -20,9 +20,9 @@ typography, colors, accessibility, copy, DESIGN.md, explicit design
 review); outside that scope the agent stays on base discipline.
 `--agent agy-frontend` forces the specialist. Docs updated in the same
 change: core rules (base + routing), frontend rules (conditional
-activation), persona (base-first opener + stay-base guideline),
-ARCHITECTURE purpose/layers/entry, README use, AGENTS entry + glossary,
-PLANS outcome.
+activation), persona reverted to frontend-only scope (routing lives in
+rules), ARCHITECTURE purpose/layers/entry, README use, AGENTS entry +
+glossary, PLANS outcome.
 
 ## Consequences
 

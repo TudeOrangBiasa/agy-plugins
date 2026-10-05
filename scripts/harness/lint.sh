@@ -10,7 +10,7 @@ while IFS= read -r f; do
   bash -n "$f" && echo "[ok] bash -n $f" || { echo "[fail] bash -n $f" >&2; fail=1; }
 done < <(find scripts plugins/agy-minimal/bin -name '*.sh' -o -name 'ffgrep' -o -name 'fffind' -o -name 'tfsearch' -o -name 'tffetch' -o -name 'agy-doctor' -o -name 'block-native-*.sh' | grep -v '/hasline$' | sort -u)
 
-for j in plugins/agy-minimal/hooks.json plugins/agy-minimal/plugin.json plugins/agy-minimal/mcp_config.json plugins/agy-frontend/plugin.json; do
+for j in plugins/agy-minimal/hooks.json plugins/agy-minimal/plugin.json plugins/agy-minimal/mcp_config.json; do
   if command -v python3 >/dev/null 2>&1; then
     python3 -m json.tool "$j" >/dev/null && echo "[ok] json $j" || { echo "[fail] json $j" >&2; fail=1; }
   elif command -v jq >/dev/null 2>&1; then

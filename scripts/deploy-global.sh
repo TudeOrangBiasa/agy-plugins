@@ -6,10 +6,16 @@
 set -euo pipefail
 
 # --dry-run prints what would change and writes nothing.
+# --link-bin opts into $HOME/.local/bin wrapper symlinks (off by default;
+# PATH target is user-owned, needs explicit confirm per rules/AGENTS.md:5).
 DRY_RUN=0
-if [ "${1:-}" = "--dry-run" ]; then
-  DRY_RUN=1
-fi
+LINK_BIN=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    --link-bin) LINK_BIN=1 ;;
+  esac
+done
 
 root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 global_plugins="$HOME/.gemini/config/plugins"
@@ -40,6 +46,34 @@ install_plugin() {
   if [ -d "$global_plugins/$name/bin" ]; then
     chmod +x "$global_plugins/$name/bin/"* 2>/dev/null || true
   fi
+  # Portable source uses $HOME-anchored hook commands (repo stays
+  # machine-independent); expand to the literal absolute install path at
+  # deploy time — the hook runner is not proven to expand env vars, and
+  # relative ./bin/ resolves nowhere (hook cwd = session launch dir).
+  if [ -f "${global_plugins:?}/${name:?}/hooks.json" ]; then
+    HOOK_SRC="${global_plugins:?}/${name:?}/hooks.json" python3 - <<'EOF'
+import json, os
+path = os.environ["HOOK_SRC"]
+home = os.environ["HOME"]
+with open(path) as f:
+    d = json.load(f)
+def walk(o):
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if k == "command" and isinstance(v, str) and v.startswith("$HOME/"):
+                o[k] = home + v[len("$HOME"):]
+            else:
+                walk(v)
+    elif isinstance(o, list):
+        for v in o:
+            walk(v)
+walk(d)
+with open(path, "w") as f:
+    json.dump(d, f, indent=2)
+    f.write("\n")
+EOF
+    echo "[expand] $name/hooks.json \$HOME -> $HOME"
+  fi
   local b
   if [ -f "$src/bins.list" ]; then
     while IFS= read -r b || [ -n "${b:-}" ]; do
@@ -54,7 +88,39 @@ install_plugin() {
 # Installer: validate + copy + exec-bit probe for every bundled plugin.
 install_all() {
   install_plugin agy-minimal
-  install_plugin agy-frontend
+}
+
+# Link user-facing wrappers onto PATH (spawn-anywhere): symlinks in
+# $HOME/.local/bin (where `agy` lives) -> global plugin bin. Internal
+# hooks (*.sh) stay unlinked; derived from bins.list so new wrappers
+# auto-link. LINK_BIN_DIR overrides the target for tests.
+link_wrappers() {
+  local dest="${LINK_BIN_DIR:-$HOME/.local/bin}"
+  local src_bin="$global_plugins/agy-minimal/bin"
+  local list="$root_dir/plugins/agy-minimal/bins.list"
+  [ -f "$list" ] || return 0
+  if [ "$DRY_RUN" -eq 1 ]; then
+    local b
+    while IFS= read -r b || [ -n "${b:-}" ]; do
+      [ -n "${b:-}" ] || continue
+      case "$b" in
+        *.sh|lib-*) continue ;;
+      esac
+      echo "[dry-run] would link $dest/$b -> $src_bin/$b"
+    done < "$list"
+    return 0
+  fi
+  mkdir -p "$dest"
+  local b
+  while IFS= read -r b || [ -n "${b:-}" ]; do
+    [ -n "${b:-}" ] || continue
+    case "$b" in
+      *.sh|lib-*) continue ;;
+    esac
+    ln -sf "$src_bin/$b" "$dest/$b" \
+      && echo "[link] $dest/$b" \
+      || echo "[warn] link failed: $dest/$b" >&2
+  done < "$list"
 }
 
 # Janitor (part 1): stale sweep (scoped). Drops global `agy-*` plugin dirs
@@ -67,7 +133,7 @@ sweep_stale_plugins() {
     [ -d "$d" ] || continue
     name=$(basename "$d")
     case "$name" in
-      agy-minimal|agy-frontend|agy-hud) continue ;;
+      agy-minimal|agy-hud) continue ;;
     esac
     if [ ! -e "$root_dir/plugins/$name" ]; then
       if [ "$DRY_RUN" -eq 1 ]; then
@@ -133,18 +199,25 @@ EOF
 
 install_all
 
+if [ "$LINK_BIN" -eq 1 ]; then
+  link_wrappers
+else
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] wrapper symlinks skipped (pass --link-bin to preview links)"
+  else
+    echo "[skip] wrapper symlinks not linked (pass --link-bin to enable)"
+  fi
+fi
+
 sweep_stale_plugins
 
 plugin_ok=0
 if command -v agy >/dev/null 2>&1; then
-  if agy agents 2>/dev/null | grep -q "^agy-minimal$"; then
-    echo "[warn] split persona agy-minimal still listed (single persona is agy-frontend)" >&2
-  fi
-  if agy agents 2>/dev/null | grep -q "^agy-frontend$"; then
-    echo "[ok] agy agents lists agy-frontend (via plugin)"
+  if agy plugin list 2>/dev/null | grep -q "agy-minimal"; then
+    echo "[ok] agy plugin lists agy-minimal"
     plugin_ok=1
   else
-    echo "[warn] agy agents does not list agy-frontend via plugin" >&2
+    echo "[warn] agy plugin does not list agy-minimal" >&2
   fi
   if agy mcp list 2>/dev/null | grep -q "tinyfish"; then
     echo "[ok] tinyfish MCP discovered (via plugin)"

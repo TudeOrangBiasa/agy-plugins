@@ -104,7 +104,7 @@ case "$result" in
     printf '{"decision":"%s","reason":%s}\n' "$dec" "$reason"
     ;;
   *)
-    echo "{}"
+    printf '{"decision":"allow"}\n'
     ;;
 esac
 exit 0

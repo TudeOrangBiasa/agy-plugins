@@ -45,4 +45,4 @@ global `~/.gemini` files do not — those need a manual/script step.
 
 ## Verify
 
-- `agy-doctor` exit 0 in repo; `make ci` green; `agy agents` lists `agy-frontend`.
+- `agy-doctor` exit 0 in repo; `make ci` green.

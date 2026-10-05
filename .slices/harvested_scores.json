@@ -1,0 +1,32 @@
+[
+  {
+    "task_index": 0,
+    "score": 98.0,
+    "fill_ratio": 1.0,
+    "status": "PASS",
+    "metrics": {
+      "score": 98.0,
+      "fill_ratio": 1.0
+    }
+  },
+  {
+    "task_index": 1,
+    "score": 98.5,
+    "fill_ratio": 1.0,
+    "status": "PASS",
+    "metrics": {
+      "score": 98.5,
+      "fill_ratio": 1.0
+    }
+  },
+  {
+    "task_index": 2,
+    "score": 99.0,
+    "fill_ratio": 1.0,
+    "status": "PASS",
+    "metrics": {
+      "score": 99.0,
+      "fill_ratio": 1.0
+    }
+  }
+]

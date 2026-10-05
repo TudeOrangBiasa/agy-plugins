@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./bin/block-native-search.sh",
+            "command": "$HOME/.gemini/config/plugins/agy-minimal/bin/block-native-search.sh",
             "timeout": 10
           }
         ]
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./bin/block-bash-bypass.sh",
+            "command": "$HOME/.gemini/config/plugins/agy-minimal/bin/block-bash-bypass.sh",
             "timeout": 10
           }
         ]
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./bin/stream-gate.sh",
+            "command": "$HOME/.gemini/config/plugins/agy-minimal/bin/stream-gate.sh",
             "timeout": 10
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./bin/block-native-edit.sh",
+            "command": "$HOME/.gemini/config/plugins/agy-minimal/bin/block-native-edit.sh",
             "timeout": 10
           }
         ]
@@ -59,7 +59,7 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "./bin/guidance-inject.sh",
+        "command": "$HOME/.gemini/config/plugins/agy-minimal/bin/guidance-inject.sh",
         "timeout": 10
       }
     ]

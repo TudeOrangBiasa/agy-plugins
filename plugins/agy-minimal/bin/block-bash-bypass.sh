@@ -100,7 +100,7 @@ case "$result" in
       "$trigger" "$wrapper"
     ;;
   *)
-    echo "{}"
+    printf '{"decision":"allow"}\n'
     ;;
 esac
 exit 0

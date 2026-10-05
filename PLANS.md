@@ -2,7 +2,7 @@
 
 ## Objective
 
-- Outcome: portable agy plugin harness — base `agy-minimal` (minimal tools + discipline: lean agent surface, fff search binaries, hashline editor, deny hooks, lazy TinyFish web tools; installed stock `agy` runs general-purpose with no flags) + conditional extension `agy-frontend` (guidelines that activate only for UI/UX/FE design work: better-* principles, design-taste identity, checklist-design verification; opt-in specialist persona via `--agent agy-frontend`). Install = deploy both `plugins/*/` (community-ready).
+- Outcome: portable agy plugin harness — single plugin `agy-minimal` (minimal tools + discipline: lean agent surface, fff search binaries, hashline editor, deny hooks, lazy TinyFish web tools; installed stock `agy` runs general-purpose with no flags). Install = deploy `plugins/agy-minimal/` (community-ready).
 - Why it matters: every active skill/plugin/MCP schema is injected into the system prompt each turn; native search/edit tools duplicate what `rg`/`fd`/anchored edits do cheaper. Artifacts act as memory (bloat/slowness suspect) → agent is told not to create them unless asked.
 - Non-goals: unregistering core tools at binary level (unsupported); global `~/.gemini` hand-edits (deploy script owns installs); `~/AGENTS.md` diet (user's file, out of scope).
 
@@ -14,7 +14,7 @@
 
 ## Context Snapshot
 
-- Relevant files/modules: `plugins/agy-minimal/` (`plugin.json`, `hooks.json`, `rules/`, `skills/`, `bin/`, `stream-rules.json`, `mcp_config.json`), `plugins/agy-frontend/agents/agy-frontend.md` (single persona), `plugins/agy-frontend/skills/checklist-design/` (`SKILL.md` + `references/` with 129 checklists bundled), `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/OBSERVABILITY.md`, `docs/adr/`, `scripts/harness/*.sh`, `scripts/audit_harness.sh`, `scripts/deploy-global.sh`.
+- Relevant files/modules: `plugins/agy-minimal/` (`plugin.json`, `hooks.json`, `rules/`, `skills/`, `bin/`, `stream-rules.json`, `mcp_config.json`), `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/OBSERVABILITY.md`, `docs/adr/`, `scripts/harness/*.sh`, `scripts/audit_harness.sh`, `scripts/deploy-global.sh`.
 - Existing commands/workflows: `make smoke|check|test|ci` via `Makefile.harness`; audit via `./scripts/audit_harness.sh .` (vendored, also a CI job).
 - Known risks: core tools can't be unregistered, only denied; `agy plugin disable`/`agy mcp disable` affect global config, applied manually not in scripts.
 
@@ -39,6 +39,8 @@
 - [x] Tests passed (`make test` green, 8/8 contracts)
 - [x] CLI-tweak expansion (no new plugin): `skills/cli-tweaks/`, `bin/agy-doctor`, rules CLI section, harness coverage
 - [x] Playbook gap closure: vendored audit + CI audit job, `ci.sh` structured events (practices 4+9 real)
+- [x] Frontend deletion: `plugins/agy-frontend/` removed; all live refs cleared (docs/adr/* historical only) (d1a0466)
+- [x] Base landing: single agystack-based project (`rules/`, `agents/poteto-agent.md`, `skills/poteto-mode/` + playbooks, `skills/agystack/`, `tests/`, `pyproject.toml`) (d1a0466)
 
 ## Decision Log
 
@@ -46,6 +48,6 @@ Decisions live in `docs/adr/` (ADR-0001–ADR-0026, short-form: Context → Deci
 
 ## Final Verification
 
-- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live `agy agents` (lists `agy-frontend` via plugin), live forced `grep_search` (denied with plugin reason text), `agy mcp list` (tinyfish pending OAuth).
+- Commands run: `make ci` (exit 0), `audit_harness.sh` (PASS), `scripts/deploy-global.sh` (exit 0, verify-before-clean), live forced `grep_search` (denied with plugin reason text), `agy mcp list` (tinyfish pending OAuth).
 - Key outputs: full pipeline green on plugin paths; legacy per-file installs cleaned; `README.md` publish instructions.
 - Follow-up tasks: one-time TinyFish OAuth (`agy mcp` UI); `~/AGENTS.md` diet; artifacts/memory trim measurement (`/context` before/after); post-compaction verdict — move `--add-dir` out of always-on (personas + rules) into cli-tweaks skill + README + deploy echo, keep rules to invariants only.
