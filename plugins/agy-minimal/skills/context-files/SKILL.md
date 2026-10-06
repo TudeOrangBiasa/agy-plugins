@@ -15,7 +15,7 @@ Pull convention: the visited repo owns its context; this plugin teaches discover
 - practices: BEST_PRACTICES.md, RULES.md
 - memory: AGENTS.md, CLAUDE.md, GEMINI.md
 - domain: CONTEXT.md, GLOSSARY.md
-- design: DESIGN.md — frontend-extension territory (tokens, system design); identity via `design-taste`, verification via `checklist-design`, polish via `better-*`.
+- design: DESIGN.md — the repo's own taste foundation; read it when present, never invent an identity when absent.
 
 Also check `docs/` for the same names; some repos nest them there.
 
