@@ -98,7 +98,7 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 
 ### Domain docs
 
-Single-context: `docs/adr/` at the repo root (`CONTEXT.md` created lazily by `/domain-modeling`). See `docs/agents/domain.md`.
+Single-context: `docs/adr/` at the repo root (`GLOSSARY.md` created lazily by `/domain-modeling`). See `docs/agents/domain.md`.
 
 ### Framework
 
