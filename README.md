@@ -51,7 +51,7 @@ plugins/agy-minimal/       # deploy artifact: tool surface (deny-hooks + wrapper
 
 ```text
 repo root                  # dev checkout (deploy ships only plugins/agy-minimal/)
-├── AGENTS.md CONTEXT.md PLANS.md
+├── AGENTS.md GLOSSARY.md PLANS.md
 ├── skills/                # agystack framework: poteto-mode + playbooks, agystack/ (hooks.json.example), …
 ├── rules/AGENTS.md        # workspace dev discipline (subagent delegation); + agystack-models.md
 ├── agents/                # poteto-agent, comment-sicko
