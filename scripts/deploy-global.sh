@@ -42,6 +42,9 @@ install_plugin() {
   mkdir -p "$global_plugins"
   rm -rf "${global_plugins:?}/${name:?}"
   cp -r "$src" "$global_plugins/$name"
+  if [ "$DRY_RUN" -eq 0 ] && command -v agy >/dev/null 2>&1; then
+    agy plugin install "$src" >&2 || echo "[warn] agy plugin install did not register $name" >&2
+  fi
   rm -rf "${global_plugins:?}/${name:?}/bin/__pycache__"
   if [ -d "$global_plugins/$name/bin" ]; then
     chmod +x "$global_plugins/$name/bin/"* 2>/dev/null || true
