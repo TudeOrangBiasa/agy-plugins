@@ -3,7 +3,7 @@
 ## Project Overview
 
 - Project: `agy-minimal` (workspace `wrasse`) — single agystack-based project.
-- Primary runtime(s): `bash`, `agy` (Antigravity CLI 1.1.27), `python3` (pytest via `test` extra in `pyproject.toml`).
+- Primary runtime(s): `bash`, `agy` (Antigravity CLI 1.1.27), `python3` (pytest via `make test-py`: `uv run --no-project --with pytest`, offline).
 - Main entrypoint(s): `agy` (no flags — base minimal tools), `plugins/agy-minimal/bin/{ffgrep,fffind,hasline,agy-doctor,tfsearch,tffetch}`, `poteto-mode`/`agystack` skills + playbooks (`skills/poteto-mode/`, `skills/agystack/`).
 
 ## Harness Commands
@@ -15,7 +15,9 @@ Run from repository root:
 | Fast sanity check | `make smoke` |
 | Static checks | `make check` |
 | Full test suite | `make test` |
-| CI-equivalent local run | `make ci` |
+| Python suite (upstream workflows) | `make test-py` |
+| Python lint | `make lint-py` |
+| Full stack CI (harness + Python) | `make ci-py` |
 
 ## Tooling Overrides
 

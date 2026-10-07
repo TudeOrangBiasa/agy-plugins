@@ -32,3 +32,6 @@ ADRs keep their Status line updated instead).
 | [0024](0024-design-md-taste.md) | DESIGN.md as the taste foundation | Accepted |
 | [0025](0025-single-persona.md) | Single frontend persona | Superseded by 0026 |
 | [0026](0026-base-default-conditional-frontend.md) | Base-default session, conditional frontend | Accepted |
+| [0027](0027-home-anchored-hook-commands.md) | Portable hook commands, literal at deploy | Accepted |
+| [0028](0028-merge-agystack-base.md) | Merge agystack base | Accepted |
+| [0029](0029-deferred-doc-debt.md) | Deferred doc debt (items 11–20) | Accepted (deferral log) |

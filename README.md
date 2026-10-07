@@ -64,7 +64,10 @@ repo root                  # dev checkout (deploy ships only plugins/agy-minimal
 ## Verify
 
 ```bash
-make ci   # smoke + lint + typecheck + test, offline
+make ci      # smoke + lint + typecheck + test, offline
+make test-py # pytest workflow suite (upstream agystack), offline
+make lint-py # ruff on Python
+make ci-py   # full stack: harness ci + test-py + lint-py
 ```
 
 ## TinyFish auth

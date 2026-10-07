@@ -15,7 +15,7 @@
 ## Context Snapshot
 
 - Relevant files/modules: `plugins/agy-minimal/` (`plugin.json`, `hooks.json`, `rules/`, `skills/`, `bin/`, `stream-rules.json`, `mcp_config.json`), `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/OBSERVABILITY.md`, `docs/adr/`, `scripts/harness/*.sh`, `scripts/audit_harness.sh`, `scripts/deploy-global.sh`.
-- Existing commands/workflows: `make smoke|check|test|ci` via `Makefile.harness`; audit via `./scripts/audit_harness.sh .` (vendored, also a CI job).
+- Existing commands/workflows: `make smoke|check|test|ci` via `Makefile.harness` (shell harness); `make test-py|lint-py|ci-py` for the Python workflow suite (CI `python` job).
 - Known risks: core tools can't be unregistered, only denied; `agy plugin disable`/`agy mcp disable` affect global config, applied manually not in scripts.
 
 ## Execution Plan
@@ -41,10 +41,13 @@
 - [x] Playbook gap closure: vendored audit + CI audit job, `ci.sh` structured events (practices 4+9 real)
 - [x] Frontend deletion: `plugins/agy-frontend/` removed; all live refs cleared (docs/adr/* historical only) (d1a0466)
 - [x] Base landing: single agystack-based project (`rules/`, `agents/poteto-agent.md`, `skills/poteto-mode/` + playbooks, `skills/agystack/`, `tests/`, `pyproject.toml`) (d1a0466)
+- [x] ADR-0029 deferred debt log (items 11–20, branch-dependent test note) (PR #5)
+- [x] Glossary rename: `CONTEXT.md` → `GLOSSARY.md` + stale frontend-skill ref fix (PR #6)
+- [x] Deploy registration: `agy plugin install` after copy in `scripts/deploy-global.sh` (PR #7, 99e7278)
 
 ## Decision Log
 
-Decisions live in `docs/adr/` (ADR-0001–ADR-0028, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
+Decisions live in `docs/adr/` (ADR-0001–ADR-0029, short-form: Context → Decision → Consequences). Do not duplicate them here; append a new ADR per structural choice.
 
 ## Final Verification
 
