@@ -27,7 +27,7 @@ Run from repository root:
 - Diagnose via `run_command`: `agy-doctor` before touching global config.
 - Native search/edit tools and raw-shell bypasses (`rg|fd`, recursive `grep`, `sed -i`/`perl -pi`, unbounded `find`, `tree|locate`, `ls -R`) are denied by plugin hooks with reasons pointing back here; plain `ls`, `ls -d`, bounded `find` stay allowed.
 - Hook `command` paths are `$HOME`-anchored to the installed plugin bin in repo source (portable); deploy expands `$HOME` to the literal absolute path (runner env expansion unproven; hook cwd = session launch dir, so relative `./bin/...` resolves nowhere — proven by exit-127 probe).
-- Skills: agentic rigor via `skills/agystack/SKILL.md` (framework entry → `skills/poteto-mode/SKILL.md` + 23 playbooks); non-trivial code edits delegate to `poteto-agent` per `rules/AGENTS.md`.
+- Skills: agentic rigor via `skills/agystack/SKILL.md` (framework entry → `skills/poteto-mode/SKILL.md` + 23 playbooks); non-trivial code edits delegate to `poteto-agent`, comment review to `comment-sicko` (`/no-comments`), per `rules/AGENTS.md`.
 
 ## Minimal Prompt
 
