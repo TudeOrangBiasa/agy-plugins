@@ -22,8 +22,6 @@ Make agent and harness workflows diagnosable without reproducing locally. Minima
 - `harness.step.start`
 - `harness.step.finish`
 - `harness.step.fail`
-- `harness.check.pass`
-- `harness.check.fail`
 - `agy.search.deny` (hook denied `grep_search`/`find_by_name`; reason references `ffgrep`/`fffind`)
 - `agy.bypass.deny` (hook denied raw shell search/edit in `run_command`; include trigger token + target wrapper)
 - `agy.search.run` (wrapper executed `rg`/`fd`; include `pattern`, `path`, `hit_count`)

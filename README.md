@@ -14,7 +14,9 @@ git clone <this-repo> && cd <this-repo>
 
 This copies `plugins/agy-minimal/` to `~/.gemini/config/plugins/`
 (validating first), then verifies `agy plugin list` shows it.
-Re-run to repair.
+Re-run to repair. Options: `--dry-run` prints what would change and writes
+nothing; `--link-bin` also symlinks user-facing wrappers into
+`$HOME/.local/bin` (off by default).
 
 ## Use
 
@@ -73,7 +75,9 @@ make ci-py   # full stack: harness ci + test-py + lint-py
 ## TinyFish auth
 
 `tfsearch`/`tffetch` call the TinyFish REST API with `TINYFISH_API_KEY` in env
-(never committed; get a key at agent.tinyfish.ai/api-keys). No OAuth, no wallet.
+(never committed; get a key at agent.tinyfish.ai/api-keys). No OAuth, no wallet
+for REST. MCP discovery (`agy mcp list`) is a different layer and may need
+OAuth first — see `scripts/deploy-global.sh`.
 
 
 ## Decisions
