@@ -13,14 +13,16 @@ Keep `agy` sessions minimal and deterministic: lean agents, fast wrapper binarie
 | Shared Arg-Parse (`plugins/agy-minimal/bin/lib-ffargs.sh`: `ff_parse_args`, sourced by `ffgrep`/`fffind`) | `<pattern> [path] [-- <extra>]` args after the usage guard | globals `pattern`, `path`, `extra` (array) | plugin bin |
 | Bin Inventory (`plugins/agy-minimal/bins.list`, read by doctor + smoke + deploy post-install probe) | repo tree | one tool-module filename per line, single source for install/check loops | plugin bin |
 | Guidance Inject (`plugins/agy-minimal/bin/guidance-inject.sh`: interface parameters `transcriptPath` + tail-range + state-handle; overrides `STREAM_RULES`, `GUIDANCE_STATE_DIR`) | transcript `tool_calls` + inject rules | one `ephemeralMessage` notice per rule per conversation, `{}` otherwise | plugin bin |
-| Deploy Installer + Janitor (`scripts/deploy-global.sh`: `install_all` vs `sweep_stale_plugins` + `clean_legacy`, `--dry-run` report interface, shared `LEGACY_*` names) | repo plugins + global `~/.gemini` | installed plugins + stale/legacy cleanup report | harness |
+| Deploy Installer + Janitor (`scripts/deploy-global.sh`: `install_all` vs `sweep_stale_plugins` + `clean_legacy`, `agy plugin validate` pre-copy + `agy plugin install` post-copy registration (PR #7), `--dry-run` report interface, `--link-bin` wrapper symlinks (opt-in, off by default), shared `LEGACY_*` names) | repo plugins + global `~/.gemini` | installed + registered plugins + stale/legacy cleanup report | harness |
 | Doctor (`plugins/agy-minimal/bin/agy-doctor`) | repo tree + global `~/.gemini` | `[ok]/[warn]/[fail]` lines, exit 0/1/2 | plugin bin |
 | Web Layer (`plugins/agy-minimal/bin/tfsearch|tffetch` REST first, `mcp_config.json` → TinyFish MCP after OAuth) | query / URLs | compact snippets / clean markdown | plugin web |
 | Rules Delegation Invariant (`rules/AGENTS.md`: subagent delegation invariant) | non-trivial engineering task | coordinator plan + `poteto-agent` delegate diffs, verification | agystack rules |
 | Executor Agent (`agents/poteto-agent.md`, subagent+mainAgent, `inherit` model) | technical spec + test criteria from coordinator | code diff in isolated context, reads `poteto-mode` SKILL.md first | agystack agents |
+| Comment Reviewer (`agents/comment-sicko.md`, subagent-only, `inherit` model, `inheritCustomizations: false`) | scoped files or diff via `/no-comments` | report only: touched files, deletion count, `MUST KILL` flags, skips | agystack agents |
 | Mode + Playbooks (`skills/poteto-mode/SKILL.md`, `skills/agystack/SKILL.md`, 23 playbooks in `skills/poteto-mode/playbooks/`) | task + matched playbook | `implementation_plan.md` / `walkthrough.md` / report artifacts in `<appDataDir>/brain/<conversation-id>/` | agystack skills |
-| Test Contract (`tests/*.py`, `test` extra in `pyproject.toml`: pytest + pytest-mock + pytest-timeout + ruff) | repo working tree | PASS/FAIL per test module | agystack tests |
-| Harness Layer (`Makefile.harness`, `scripts/harness/*.sh`) | repo working tree | PASS/FAIL + logs | harness |
+| Test Contract (`tests/*.py` via `make test-py`: `uv run --no-project --with pytest --timeout=60`, offline) | repo working tree | PASS/FAIL per test module | agystack tests |
+| Harness Layer (`Makefile.harness`, `scripts/harness/*.sh`: `smoke|lint|typecheck|test|check|ci`) | repo working tree | PASS/FAIL + logs | harness |
+| Python CI Gates (`Makefile`: `test-py|lint-py|ci-py`; `.github/workflows/harness.yml` `python` job) | repo working tree | pytest PASS/FAIL + ruff clean | harness |
 | Package Manifest (`pyproject.toml`: `agystack` 0.1.0, hatchling, `agent` + `test` extras) | repo tree | wheel (`skills` package) / installed extras | agystack packaging |
 
 ## Data Shape Contracts
@@ -41,7 +43,7 @@ Keep `agy` sessions minimal and deterministic: lean agents, fast wrapper binarie
 
 ## Module Ownership Rules
 
-- One primary responsibility per module (`ffgrep` = text search; `fffind` = file search; `hasline` = anchored edits; block scripts = deny; `rules/AGENTS.md` = delegation invariant; `poteto-agent` = code execution; `poteto-mode`/`agystack` = rigor + playbooks; `tests/` = pytest contract; `pyproject.toml` = packaging).
+- One primary responsibility per module (`ffgrep` = text search; `fffind` = file search; `hasline` = anchored edits; block scripts = deny; `rules/AGENTS.md` = delegation invariant; `poteto-agent` = code execution; `comment-sicko` = comment review (report only, via `/no-comments`); `poteto-mode`/`agystack` = rigor + playbooks; `tests/` = pytest contract via `make test-py`; `pyproject.toml` = packaging).
 - No cross-layer shortcuts without explicit architecture update (agent MUST NOT call `rg`/`fd` directly; go through wrappers).
 - New modules require ownership and boundary documentation (add row above + contract line).
 
