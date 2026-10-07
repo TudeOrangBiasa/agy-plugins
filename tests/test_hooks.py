@@ -26,6 +26,32 @@ def run_hook(stdin_data: str) -> subprocess.CompletedProcess:
     )
 
 
+def _safety_hook_cwd() -> str:
+    """Throwaway cwd whose git branch reads as main (ADR-0029:62).
+
+    is_trunk_force_push() in pre_tool_safety.py treats an unqualified
+    force-push as destructive ONLY when get_current_branch() is
+    main/master/detached. The hook runs in a subprocess inheriting our cwd,
+    so in-process unittest.mock stubs cannot reach its get_current_branch();
+    instead pin the subprocess cwd to a scratch dir whose .git/HEAD is
+    ``ref: refs/heads/main`` (git rev-parse fails there, the hook falls
+    back to the HEAD file -> "main"). Feature-branch allowance in the hook
+    itself is intended - this test-only stub keeps the 7 unqualified-push
+    subtests branch-independent.
+    """
+    global _SAFETY_HOOK_CWD
+    if _SAFETY_HOOK_CWD is None:
+        trunk_dir = tempfile.mkdtemp(prefix="safety-hook-trunk-")
+        git_dir = Path(trunk_dir) / ".git"
+        git_dir.mkdir(exist_ok=True)
+        (git_dir / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+        _SAFETY_HOOK_CWD = trunk_dir
+    return _SAFETY_HOOK_CWD
+
+
+_SAFETY_HOOK_CWD: str | None = None
+
+
 def run_safety_hook(
     stdin_data: str, env: dict | None = None
 ) -> subprocess.CompletedProcess:
@@ -42,6 +68,7 @@ def run_safety_hook(
         text=True,
         check=False,
         env=run_env,
+        cwd=_safety_hook_cwd(),
     )
 
 
